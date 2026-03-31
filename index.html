@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Swiss Blueprint | Écosystème Complet</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        swissred: '#DA291C',
+                        inkblack: '#111111',
+                        pearlgrey: '#F5F5F7',
+                        navyblue: '#0A192F',
+                        gold: '#B8860B',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* SHARED UTILS */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .view-transition {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+            position: absolute;
+            width: 100%;
+        }
+
+        /* PUBLIC VIEW STYLES */
+        .public-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 450px;
+            min-height: 300px;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .swiss-logo {
+            width: 28px;
+            height: 28px;
+            background-color: #DA291C;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        /* PREMIUM & LEGAL VIEW STYLES */
+        .premium-chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        .premium-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .premium-scrollbar::-webkit-scrollbar-track {
+            background: #F5F5F7; 
+        }
+        .premium-scrollbar::-webkit-scrollbar-thumb {
+            background: #CBD5E1; 
+            border-radius: 4px;
+        }
+        .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8; 
+        }
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left-color: #DA291C;
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body id="app-body" class="bg-white text-inkblack font-sans antialiased selection:bg-swissred selection:text-white relative">
+
+    <!-- ========================================== -->
+    <!-- ========== VUE PUBLIQUE (LANDING) ======== -->
+    <!-- ========================================== -->
+    <div id="public-view" class="view-transition block w-full">
+        
+        <nav class="fixed w-full z-50 glass-panel transition-all duration-300" id="navbar">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-20">
+                    <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                        <div class="swiss-logo pb-1">+</div>
+                        <span class="font-serif font-bold text-xl tracking-tight text-navyblue hidden sm:block">The Swiss Blueprint</span>
+                    </div>
+                    <div class="flex items-center gap-3 sm:gap-6">
+                        <div class="flex items-center text-[10px] sm:text-sm font-medium text-gray-400">
+                            <button id="lang-fr" onclick="switchLanguage('fr')" class="text-inkblack font-bold cursor-pointer border-b-2 border-inkblack pb-1 transition-colors">FR</button>
+                            <span class="mx-1 sm:mx-2">|</span>
+                            <button id="lang-en" onclick="switchLanguage('en')" class="cursor-pointer hover:text-inkblack border-b-2 border-transparent hover:border-gray-300 pb-1 transition-colors">EN</button>
+                            <span class="mx-1 sm:mx-2">|</span>
+                            <button id="lang-it" onclick="switchLanguage('it')" class="cursor-pointer hover:text-inkblack border-b-2 border-transparent hover:border-gray-300 pb-1 transition-colors">IT</button>
+                            <span class="mx-1 sm:mx-2">|</span>
+                            <button id="lang-de" onclick="switchLanguage('de')" class="cursor-pointer hover:text-inkblack border-b-2 border-transparent hover:border-gray-300 pb-1 transition-colors">DE</button>
+                        </div>
+                        <button onclick="toggleView('premium')" data-fr="Connexion" data-en="Login" data-it="Accedi" data-de="Login" class="translatable text-xs sm:text-sm font-semibold text-navyblue hover:text-swissred transition-colors duration-200">
+                            Connexion
+                        </button>
+                        <a href="#pricing" data-fr="Acheter" data-en="Buy" data-it="Acquista" data-de="Kaufen" class="translatable bg-inkblack text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-medium text-xs sm:text-sm hover:bg-swissred transition-colors duration-300 shadow-lg">
+                            Acheter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <header class="pt-32 pb-20 sm:pt-40 sm:pb-24 lg:pb-32 overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-full h-full bg-pearlgrey -z-10" style="clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);"></div>
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center reveal">
+                <p data-fr="Pour les étudiants internationaux en Suisse (Futurs & Actuels)" data-en="For international students in Switzerland (Future & Current)" data-it="Per gli studenti internazionali in Svizzera (Futuri e Attuali)" data-de="Für internationale Studierende in der Schweiz (Zukünftige & Aktuelle)" class="translatable text-xs sm:text-sm font-semibold text-swissred tracking-widest uppercase mb-4">
+                    Pour les étudiants internationaux en Suisse (Futurs & Actuels)
+                </p>
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-serif font-bold text-navyblue tracking-tight mb-8 leading-tight max-w-5xl mx-auto">
+                    <span data-fr="Le système suisse vide ton compte en banque." data-en="The Swiss system is draining your bank account." data-it="Il sistema svizzero sta svuotando il tuo conto." data-de="Das Schweizer System plündert dein Bankkonto." class="translatable">Le système suisse vide ton compte en banque.</span> <br/>
+                    <span data-fr="Voici comment l'arrêter." data-en="Here is how to stop it." data-it="Ecco come fermarlo." data-de="So stoppst du es." class="translatable text-inkblack">Voici comment l'arrêter.</span>
+                </h1>
+                <p data-fr="Que tu sois à l'EPFL, l'UNIL, l'EHL ou en HES, le coût de la vie détruit les budgets. Ne sois pas la victime des pièges à étrangers. Accède aux failles légales pour réduire drastiquement tes factures de logement, d'assurance et de nourriture." data-en="Whether at EPFL, UNIL, EHL, or HES, the cost of living destroys budgets. Don't fall victim to foreigner traps. Access legal loopholes to drastically reduce your housing, insurance, and food bills." data-it="Che tu sia all'EPFL, UNIL, EHL o HES, il costo della vita distrugge i budget. Non essere vittima delle trappole per stranieri. Accedi alle scappatoie legali per ridurre drasticamente le spese di alloggio, assicurazione e cibo." data-de="Ob EPFL, UNIL, EHL oder HES, die Lebenshaltungskosten zerstören Budgets. Werde nicht Opfer von Ausländerfallen. Nutze legale Schlupflöcher, um deine Rechnungen für Wohnen, Versicherung und Essen drastisch zu senken." class="translatable mt-4 max-w-3xl text-lg sm:text-xl text-gray-600 mx-auto font-light leading-relaxed mb-10">
+                    Que tu sois à l'EPFL, l'UNIL, l'EHL ou en HES, le coût de la vie détruit les budgets. Ne sois pas la victime des pièges à étrangers. Accède aux failles légales pour réduire drastiquement tes factures de logement, d'assurance et de nourriture.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                    <a href="#roi-calculator" data-fr="Voir les économies (119 CHF)" data-en="See the savings (119 CHF)" data-it="Vedi i risparmi (119 CHF)" data-de="Ersparnisse ansehen (119 CHF)" class="translatable bg-swissred text-white px-8 py-4 rounded-full font-semibold text-lg hover:bg-red-700 transition-all duration-300 shadow-[0_0_20px_rgba(218,41,28,0.3)] hover:-translate-y-1">
+                        Voir les économies (119 CHF)
+                    </a>
+                    <p data-fr="Potentiellement rentabilisé en moins de 10 jours.*" data-en="Potentially pays for itself in under 10 days.*" data-it="Potenzialmente ammortizzato in meno di 10 giorni.*" data-de="Amortisiert sich potenziell in weniger als 10 Tagen.*" class="translatable text-sm text-gray-500 font-medium mt-2 sm:mt-0">Potentiellement rentabilisé en moins de 10 jours.*</p>
+                </div>
+            </div>
+        </header>
+
+        <section class="py-20 bg-white" id="problem">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16 reveal">
+                    <h2 data-fr="La &quot;Taxe de l'Étranger&quot;" data-en="The &quot;Foreigner Tax&quot;" data-it="La &quot;Tassa per Stranieri&quot;" data-de="Die &quot;Ausländersteuer&quot;" class="translatable text-3xl md:text-4xl font-serif font-bold text-navyblue mb-4">La "Taxe de l'Étranger"</h2>
+                    <p data-fr="Le système est conçu pour te faire payer le prix fort. Voici les pièges fatals dans lesquels 90% des nouveaux arrivants tombent." data-en="The system is designed to make you pay the premium price. Here are the fatal traps 90% of newcomers fall into." data-it="Il sistema è progettato per farti pagare il prezzo massimo. Ecco le trappole fatali in cui cade il 90% dei nuovi arrivati." data-de="Das System ist darauf ausgelegt, dich den Höchstpreis zahlen zu lassen. Hier sind die fatalen Fallen, in die 90 % der Neuankömmlinge tappen." class="translatable text-lg text-gray-600 max-w-2xl mx-auto">Le système est conçu pour te faire payer le prix fort. Voici les pièges fatals dans lesquels 90% des nouveaux arrivants tombent.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="p-8 rounded-2xl bg-pearlgrey border border-gray-100 reveal delay-100">
+                        <div class="text-4xl mb-4">🏥</div>
+                        <h3 data-fr="L'Assurance Maladie" data-en="Health Insurance" data-it="Assicurazione Sanitaria" data-de="Krankenversicherung" class="translatable text-xl font-bold mb-3">L'Assurance Maladie</h3>
+                        <p class="text-gray-600">
+                            <span data-fr="Tu signes un contrat standard sans connaître l'exemption légale étudiante." data-en="You sign a standard contract without knowing about the legal student exemption." data-it="Firmi un contratto standard senza conoscere l'esenzione legale per studenti." data-de="Du unterschreibst einen Standardvertrag, ohne die gesetzliche Studentenbefreiung zu kennen." class="translatable">Tu signes un contrat standard sans connaître l'exemption légale étudiante.</span> <br><br>
+                            <span data-fr="Perte : ~300 CHF / mois." data-en="Loss: ~300 CHF / month." data-it="Perdita: ~300 CHF / mese." data-de="Verlust: ~300 CHF / Monat." class="translatable text-swissred font-bold">Perte : ~300 CHF / mois.</span>
+                        </p>
+                    </div>
+                    <div class="p-8 rounded-2xl bg-pearlgrey border border-gray-100 reveal delay-200">
+                        <div class="text-4xl mb-4">🏢</div>
+                        <h3 data-fr="Le Logement" data-en="Housing" data-it="L'Alloggio" data-de="Das Wohnen" class="translatable text-xl font-bold mb-3">Le Logement</h3>
+                        <p class="text-gray-600">
+                            <span data-fr="Tu passes par des agences prédatrices ou des résidences privées hors de prix car tu n'as pas de garant suisse." data-en="You use predatory agencies or overpriced private residences because you don't have a Swiss guarantor." data-it="Ti affidi ad agenzie predatrici o residenze private sovrapprezzo perché non hai un garante svizzero." data-de="Du wendest dich an räuberische Agenturen oder überteuerte Privatresidenzen, da du keinen Schweizer Bürgen hast." class="translatable">Tu passes par des agences prédatrices ou des résidences privées hors de prix car tu n'as pas de garant suisse.</span> <br><br>
+                            <span data-fr="Perte : ~400 CHF / mois." data-en="Loss: ~400 CHF / month." data-it="Perdita: ~400 CHF / mese." data-de="Verlust: ~400 CHF / Monat." class="translatable text-swissred font-bold">Perte : ~400 CHF / mois.</span>
+                        </p>
+                    </div>
+                    <div class="p-8 rounded-2xl bg-pearlgrey border border-gray-100 reveal delay-300">
+                        <div class="text-4xl mb-4">🛒</div>
+                        <h3 data-fr="La Survie Alimentaire" data-en="Food Survival" data-it="Sopravvivenza Alimentare" data-de="Überleben beim Essen" class="translatable text-xl font-bold mb-3">La Survie Alimentaire</h3>
+                        <p class="text-gray-600">
+                            <span data-fr="Tu fais tes courses au mauvais endroit, sans connaître la hiérarchie stricte des supermarchés locaux." data-en="You shop in the wrong places, without knowing the strict hierarchy of local supermarkets." data-it="Fai la spesa nei posti sbagliati, senza conoscere la rigida gerarchia dei supermercati locali." data-de="Du kaufst am falschen Ort ein, ohne die strenge Hierarchie der lokalen Supermärkte zu kennen." class="translatable">Tu fais tes courses au mauvais endroit, sans connaître la hiérarchie stricte des supermarchés locaux.</span> <br><br>
+                            <span data-fr="Perte : ~200 CHF / mois." data-en="Loss: ~200 CHF / month." data-it="Perdita: ~200 CHF / mese." data-de="Verlust: ~200 CHF / Monat." class="translatable text-swissred font-bold">Perte : ~200 CHF / mois.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-navyblue text-white" id="roi-calculator">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="mb-12 text-center reveal">
+                    <h2 data-fr="Arrête l'hémorragie financière aujourd'hui." data-en="Stop the financial hemorrhage today." data-it="Ferma l'emorragia finanziaria oggi stesso." data-de="Stoppe die finanzielle Blutung noch heute." class="translatable text-3xl md:text-5xl font-serif font-bold mb-6">Arrête l'hémorragie financière aujourd'hui.</h2>
+                    <p data-fr="Voici mathématiquement ce que The Swiss Blueprint change à ton budget dès le premier mois." data-en="Here is mathematically what The Swiss Blueprint changes to your budget from the first month." data-it="Ecco matematicamente cosa cambia The Swiss Blueprint al tuo budget dal primo mese." data-de="Hier ist mathematisch, was The Swiss Blueprint ab dem ersten Monat an deinem Budget ändert." class="translatable text-xl text-gray-300 max-w-3xl mx-auto font-light">
+                        Voici mathématiquement ce que The Swiss Blueprint change à ton budget dès le premier mois.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-2xl reveal">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-gray-100 pb-8">
+                        <div>
+                            <h3 data-fr="Comparatif des Dépenses Mensuelles" data-en="Monthly Expenses Comparison" data-it="Confronto Spese Mensili" data-de="Monatlicher Ausgabenvergleich" class="translatable text-2xl font-bold text-inkblack mb-2">Comparatif des Dépenses Mensuelles</h3>
+                            <p data-fr="Survolez les barres pour voir les montants exacts." data-en="Hover over the bars to see exact amounts." data-it="Passa il mouse sulle barre per vedere gli importi esatti." data-de="Fahre über die Balken, um genaue Beträge zu sehen." class="translatable text-gray-500 text-sm">Survolez les barres pour voir les montants exacts.</p>
+                        </div>
+                        <div class="mt-4 md:mt-0 text-right bg-pearlgrey p-4 rounded-xl border border-gray-200">
+                            <p data-fr="Économies générées" data-en="Savings Generated" data-it="Risparmi Generati" data-de="Generierte Einsparungen" class="translatable text-sm font-semibold text-gray-500 uppercase">Économies générées</p>
+                            <p class="text-3xl font-black text-green-600"><span data-fr="Jusqu'à" data-en="Up to" data-it="Fino a" data-de="Bis zu" class="translatable text-xl">Jusqu'à</span> 1030 CHF* <span data-fr="/ mois" data-en="/ month" data-it="/ mese" data-de="/ Monat" class="translatable text-lg text-inkblack font-medium">/ mois</span></p>
+                        </div>
+                    </div>
+
+                    <div class="public-chart-container">
+                        <canvas id="publicRoiChart"></canvas>
+                    </div>
+                    
+                    <div class="mt-8 text-center">
+                        <p class="text-gray-600 text-lg">
+                            <span data-fr="L'accès à la plateforme coûte" data-en="Platform access costs" data-it="L'accesso alla piattaforma costa" data-de="Der Zugang zur Plattform kostet" class="translatable">L'accès à la plateforme coûte</span> <strong class="text-inkblack">119 CHF</strong>. <span data-fr="C'est un investissement qui se rembourse mathématiquement en quelques jours." data-en="It's an investment that mathematically pays for itself in a few days." data-it="È un investimento che si ripaga matematicamente in pochi giorni." data-de="Es ist eine Investition, die sich mathematisch in wenigen Tagen amortisiert." class="translatable">C'est un investissement qui se rembourse mathématiquement en quelques jours.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-pearlgrey" id="modules">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16 reveal">
+                    <h2 data-fr="Ce qu'il y a dans l'Espace Premium" data-en="What's inside the Premium Space" data-it="Cosa c'è nello Spazio Premium" data-de="Was im Premium-Bereich ist" class="translatable text-3xl md:text-4xl font-serif font-bold text-navyblue mb-4">Ce qu'il y a dans l'Espace Premium</h2>
+                    <p data-fr="Pas de blabla. Que des hacks concrets et des failles légales pour protéger ton compte en banque." data-en="No fluff. Only concrete hacks and legal loopholes to protect your bank account." data-it="Niente chiacchiere. Solo trucchi concreti e scappatoie legali per proteggere il tuo conto in banca." data-de="Kein Blabla. Nur konkrete Hacks und legale Schlupflöcher, um dein Bankkonto zu schützen." class="translatable text-lg text-gray-600 max-w-2xl mx-auto">Pas de blabla. Que des hacks concrets et des failles légales pour protéger ton compte en banque.</p>
+                </div>
+
+                <div class="flex flex-col md:flex-row gap-8 reveal">
+                    <div class="w-full md:w-1/3 flex flex-col gap-2" id="pub-tab-buttons">
+                        <button class="pub-tab-btn w-full text-left px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 bg-white text-inkblack shadow-sm border-l-4 border-swissred" data-target="pub-mod1">
+                            <span data-fr="🏥 1. Assurances (Exemption)" data-en="🏥 1. Insurance (Exemption)" data-it="🏥 1. Assicurazioni (Esenzione)" data-de="🏥 1. Versicherungen (Befreiung)" class="translatable">🏥 1. Assurances (Exemption)</span>
+                        </button>
+                        <button class="pub-tab-btn w-full text-left px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:bg-white text-gray-500 hover:text-inkblack border-l-4 border-transparent" data-target="pub-mod2">
+                            <span data-fr="🏠 2. Logement (FMEL/Privé)" data-en="🏠 2. Housing (FMEL/Private)" data-it="🏠 2. Alloggio (FMEL/Privato)" data-de="🏠 2. Wohnen (FMEL/Privat)" class="translatable">🏠 2. Logement (FMEL/Privé)</span>
+                        </button>
+                        <button class="pub-tab-btn w-full text-left px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:bg-white text-gray-500 hover:text-inkblack border-l-4 border-transparent" data-target="pub-mod3">
+                            <span data-fr="🛒 3. Survie Alimentaire" data-en="🛒 3. Food Survival" data-it="🛒 3. Sopravvivenza Alimentare" data-de="🛒 3. Überleben beim Essen" class="translatable">🛒 3. Survie Alimentaire</span>
+                        </button>
+                        <button class="pub-tab-btn w-full text-left px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:bg-white text-gray-500 hover:text-inkblack border-l-4 border-transparent" data-target="pub-mod4">
+                            <span data-fr="🚆 4. Transports & Tel" data-en="🚆 4. Transport & Mobile" data-it="🚆 4. Trasporti e Telefono" data-de="🚆 4. Verkehr & Mobile" class="translatable">🚆 4. Transports & Tel</span>
+                        </button>
+                        <button class="pub-tab-btn w-full text-left px-6 py-4 rounded-xl font-bold text-lg transition-all duration-200 hover:bg-white text-gray-500 hover:text-inkblack border-l-4 border-transparent" data-target="pub-mod5">
+                            <span data-fr="💸 5. Programme Ambassadeur" data-en="💸 5. Ambassador Program" data-it="💸 5. Programma Ambasciatori" data-de="💸 5. Botschafterprogramm" class="translatable">💸 5. Programme Ambassadeur</span>
+                        </button>
+                    </div>
+
+                    <div class="w-full md:w-2/3 bg-white p-8 md:p-10 rounded-2xl shadow-lg border border-gray-100 min-h-[350px]">
+                        <div id="pub-mod1" class="pub-tab-content block">
+                            <h3 data-fr="L'hémorragie financière" data-en="The Financial Hemorrhage" data-it="L'emorragia finanziaria" data-de="Die finanzielle Blutung" class="translatable text-2xl font-bold mb-6 text-navyblue border-b pb-4">L'hémorragie financière</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="L'Optimisation Légale (Exemption) :" data-en="The Legal Optimization (Exemption):" data-it="L'Ottimizzazione Legale (Esenzione):" data-de="Die legale Optimierung (Befreiung):" class="translatable">L'Optimisation Légale (Exemption) :</strong> <span data-fr="Processus légal exact pour les étudiants UE/AELE." data-en="Exact legal process for EU/EFTA students." data-it="Processo legale esatto per gli studenti UE/AELS." data-de="Genauer rechtlicher Prozess für EU/EFTA-Studierende." class="translatable">Processus légal exact pour les étudiants UE/AELE.</span></span></li>
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="L'astuce Non-UE :" data-en="The Non-EU Trick:" data-it="Il trucco Non-UE:" data-de="Der Nicht-EU-Trick:" class="translatable">L'astuce Non-UE :</strong> <span data-fr="Comment passer de 350 CHF à 65 CHF/mois légalement." data-en="How to legally drop from 350 CHF to 65 CHF/month." data-it="Come scendere legalmente da 350 CHF a 65 CHF/mese." data-de="Wie man legal von 350 CHF auf 65 CHF/Monat sinkt." class="translatable">Comment passer de 350 CHF à 65 CHF/mois légalement.</span></span></li>
+                            </ul>
+                        </div>
+                        <div id="pub-mod2" class="pub-tab-content hidden">
+                            <h3 data-fr="La guerre de l'immobilier" data-en="The Housing War" data-it="La guerra immobiliare" data-de="Der Immobilienkrieg" class="translatable text-2xl font-bold mb-6 text-navyblue border-b pb-4">La guerre de l'immobilier</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="La stratégie du Sniper FMEL :" data-en="The FMEL Sniper Strategy:" data-it="La strategia del Cecchino FMEL:" data-de="Die FMEL Sniper-Strategie:" class="translatable">La stratégie du Sniper FMEL :</strong> <span data-fr="Comment hacker les files d'attente." data-en="How to hack the waiting lists." data-it="Come hackerare le liste d'attesa." data-de="Wie man die Wartelisten hackt." class="translatable">Comment hacker les files d'attente.</span></span></li>
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="Le &quot;Dossier en Béton&quot; :" data-en="The &quot;Bulletproof Dossier&quot;:" data-it="Il &quot;Dossier di Ferro&quot;:" data-de="Das &quot;kugelsichere Dossier&quot;:" class="translatable">Le "Dossier en Béton" :</strong> <span data-fr="Ce qu'une régie veut voir (Extrait des poursuites, astuces sans garant local)." data-en="What agencies want to see (Debt extracts, tips without a local guarantor)." data-it="Cosa vogliono vedere le agenzie (Estratto esecuzioni, trucchi senza garante locale)." data-de="Was Agenturen sehen wollen (Betreibungsauszug, Tipps ohne lokalen Bürgen)." class="translatable">Ce qu'une régie veut voir (Extrait des poursuites, astuces sans garant local).</span></span></li>
+                            </ul>
+                        </div>
+                        <div id="pub-mod3" class="pub-tab-content hidden">
+                            <h3 data-fr="Manger sans pleurer" data-en="Eating without crying" data-it="Mangiare senza piangere" data-de="Essen ohne zu weinen" class="translatable text-2xl font-bold mb-6 text-navyblue border-b pb-4">Manger sans pleurer</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="La hiérarchie stricte :" data-en="The strict hierarchy:" data-it="La rigida gerarchia:" data-de="Die strenge Hierarchie:" class="translatable">La hiérarchie stricte :</strong> <span data-fr="On vous montre exactement où faire vos courses pour diviser la facture par deux." data-en="We show you exactly where to shop to cut your grocery bill in half." data-it="Ti mostriamo esattamente dove fare acquisti per dimezzare il conto della spesa." data-de="Wir zeigen dir genau, wo du einkaufen musst, um deine Lebensmittelrechnung zu halbieren." class="translatable">On vous montre exactement où faire vos courses pour diviser la facture par deux.</span></span></li>
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="L'astuce de gros :" data-en="The Wholesale Trick:" data-it="Il trucco all'ingrosso:" data-de="Der Großhandels-Trick:" class="translatable">L'astuce de gros :</strong> <span data-fr="Obtenir la carte pro en tant qu'étudiant pour acheter en gros." data-en="Get the professional card as a student to buy in bulk." data-it="Ottieni la carta professionale come studente per acquistare all'ingrosso." data-de="Hol dir die Profikarte als Student, um in großen Mengen einzukaufen." class="translatable">Obtenir la carte pro en tant qu'étudiant pour acheter en gros.</span></span></li>
+                            </ul>
+                        </div>
+                        <div id="pub-mod4" class="pub-tab-content hidden">
+                            <h3 data-fr="Transports & Communication" data-en="Transport & Communication" data-it="Trasporti e Comunicazione" data-de="Verkehr & Kommunikation" class="translatable text-2xl font-bold mb-6 text-navyblue border-b pb-4">Transports & Communication</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="Subventions Locales :" data-en="Local Subsidies:" data-it="Sussidi Locali:" data-de="Lokale Subventionen:" class="translatable">Subventions Locales :</strong> <span data-fr="On vous montre comment réduire de 40% le prix de vos abonnements de transport." data-en="We show you how to reduce the price of your transport passes by 40%." data-it="Ti mostriamo come ridurre del 40% il prezzo dei tuoi abbonamenti ai trasporti." data-de="Wir zeigen dir, wie du den Preis für deine Transportabos um 40 % senken kannst." class="translatable">On vous montre comment réduire de 40% le prix de vos abonnements de transport.</span></span></li>
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="Le piège Telecom :" data-en="The Telecom Trap:" data-it="La trappola delle Telecomunicazioni:" data-de="Die Telekom-Falle:" class="translatable">Le piège Telecom :</strong> <span data-fr="Les opérateurs low-cost virtuels secrets et le calendrier des offres à -60%." data-en="Secret virtual low-cost operators and the calendar for -60% offers." data-it="Operatori virtuali segreti a basso costo e il calendario delle offerte al -60%." data-de="Geheime virtuelle Low-Cost-Anbieter und der Kalender für -60 % Angebote." class="translatable">Les opérateurs low-cost virtuels secrets et le calendrier des offres à -60%.</span></span></li>
+                            </ul>
+                        </div>
+                        <div id="pub-mod5" class="pub-tab-content hidden">
+                            <h3 data-fr="Au delà du PDF" data-en="Beyond the Guide" data-it="Oltre la Guida" data-de="Jenseits des Guides" class="translatable text-2xl font-bold mb-6 text-navyblue border-b pb-4">Au delà du PDF</h3>
+                            <ul class="space-y-4">
+                                <li class="flex items-start gap-3"><span class="text-swissred mt-1">✓</span> <span class="text-gray-700"><strong data-fr="Programme Ambassadeur :" data-en="Ambassador Program:" data-it="Programma Ambasciatori:" data-de="Botschafterprogramm:" class="translatable">Programme Ambassadeur :</strong> <span data-fr="Gagne 30 CHF cash à chaque fois qu'un étudiant achète via ton lien." data-en="Earn 30 CHF cash every time a student buys through your link." data-it="Guadagna 30 CHF in contanti ogni volta che uno studente acquista tramite il tuo link." data-de="Verdiene 30 CHF in bar, jedes Mal, wenn ein Student über deinen Link kauft." class="translatable">Gagne 30 CHF cash à chaque fois qu'un étudiant achète via ton lien.</span></span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-24 bg-white" id="social-proof">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <h2 data-fr="Ceux qui ont hacké le système" data-en="Those who hacked the system" data-it="Coloro che hanno hackerato il sistema" data-de="Diejenigen, die das System gehackt haben" class="translatable text-3xl font-serif font-bold text-center text-navyblue mb-16 reveal">Ceux qui ont hacké le système</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-pearlgrey p-8 rounded-2xl reveal relative">
+                        <div class="text-swissred text-4xl font-serif absolute top-4 left-6 opacity-20">"</div>
+                        <p data-fr="J'étais déjà à l'UNIL depuis un an. Je payais 320 CHF d'assurance par mois... Ce guide m'a montré la faille pour obtenir l'exemption à 65 CHF. J'ai eu envie de pleurer en pensant à ce que j'avais perdu." data-en="I had already been at UNIL for a year. I was paying 320 CHF/month for insurance... This guide showed me the loophole to get the exemption at 65 CHF. I wanted to cry thinking about what I had lost." data-it="Ero già all'UNIL da un anno. Pagavo 320 CHF/mese di assicurazione... Questa guida mi ha mostrato la scappatoia per ottenere l'esenzione a 65 CHF. Volevo piangere pensando a quello che avevo perso." data-de="Ich war bereits ein Jahr an der UNIL. Ich zahlte 320 CHF/Monat für die Versicherung... Dieser Leitfaden zeigte mir das Schlupfloch, um die Befreiung für 65 CHF zu erhalten. Ich wollte weinen, wenn ich daran dachte, was ich verloren hatte." class="translatable text-gray-700 mb-6 italic relative z-10">
+                            J'étais déjà à l'UNIL depuis un an. Je payais 320 CHF d'assurance par mois... Ce guide m'a montré la faille pour obtenir l'exemption à 65 CHF. J'ai eu envie de pleurer en pensant à ce que j'avais perdu.
+                        </p>
+                        <div class="flex items-center gap-4 border-t border-gray-200 pt-6">
+                            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white text-xl">A</div>
+                            <div>
+                                <p class="font-bold text-inkblack">Amina</p>
+                                <p data-fr="Master, Université de Lausanne (UNIL)" data-en="Master's degree, University of Lausanne (UNIL)" data-it="Laurea Magistrale, Università di Losanna (UNIL)" data-de="Masterabschluss, Universität Lausanne (UNIL)" class="translatable text-sm text-gray-500">Master, Université de Lausanne (UNIL)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-pearlgrey p-8 rounded-2xl reveal relative delay-100">
+                        <div class="text-swissred text-4xl font-serif absolute top-4 left-6 opacity-20">"</div>
+                        <p data-fr="Impossible de trouver un appart sans garant suisse. Les agences me ghostaient. Le template de dossier &quot;Anti-Rejet&quot; m'a permis de sécuriser une sous-location à Renens depuis mon pays d'origine." data-en="Impossible to find an apartment without a Swiss guarantor. Agencies were ghosting me. The &quot;Anti-Rejection&quot; dossier template allowed me to secure a sublet in Renens from my home country." data-it="Impossibile trovare un appartamento senza un garante svizzero. Le agenzie mi ignoravano. Il modello di dossier &quot;Anti-Rifiuto&quot; mi ha permesso di assicurare un subaffitto a Renens dal mio paese d'origine." data-de="Unmöglich, eine Wohnung ohne Schweizer Bürgen zu finden. Agenturen haben mich ignoriert. Die &quot;Anti-Ablehnungs&quot;-Dossier-Vorlage ermöglichte es mir, eine Untermiete in Renens von meinem Heimatland aus zu sichern." class="translatable text-gray-700 mb-6 italic relative z-10">
+                            Impossible de trouver un appart sans garant suisse. Les agences me ghostaient. Le template de dossier "Anti-Rejet" m'a permis de sécuriser une sous-location à Renens depuis mon pays d'origine.
+                        </p>
+                        <div class="flex items-center gap-4 border-t border-gray-200 pt-6">
+                            <div class="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center font-bold text-white text-xl">L</div>
+                            <div>
+                                <p class="font-bold text-inkblack">Lucas</p>
+                                <p data-fr="Bachelor, EPFL" data-en="Bachelor's degree, EPFL" data-it="Laurea Triennale, EPFL" data-de="Bachelorabschluss, EPFL" class="translatable text-sm text-gray-500">Bachelor, EPFL</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-32 bg-pearlgrey text-center border-b-8 border-swissred" id="pricing">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 reveal">
+                <h2 data-fr="Le prix de l'ignorance est bien plus élevé." data-en="The price of ignorance is much higher." data-it="Il prezzo dell'ignoranza è molto più alto." data-de="Der Preis der Unwissenheit ist viel höher." class="translatable text-4xl sm:text-5xl font-serif font-bold text-navyblue mb-6">Le prix de l'ignorance est bien plus élevé.</h2>
+                <p data-fr="Accède immédiatement à l'Espace Premium." data-en="Get immediate access to the Premium Space." data-it="Ottieni l'accesso immediato allo Spazio Premium." data-de="Erhalte sofortigen Zugang zum Premium-Bereich." class="translatable text-xl text-gray-600 mb-10">Accède immédiatement à l'Espace Premium.</p>
+                
+                <div class="bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 relative max-w-lg mx-auto transform hover:scale-105 transition-transform duration-300">
+                    <div data-fr="Accès à Vie" data-en="Lifetime Access" data-it="Accesso a Vita" data-de="Lebenslanger Zugang" class="translatable absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-inkblack text-white px-4 py-1 rounded-full text-sm font-bold tracking-wider uppercase">
+                        Accès à Vie
+                    </div>
+                    <div class="text-6xl font-black text-inkblack mb-2">119 <span class="text-3xl text-gray-400">CHF</span></div>
+                    <p data-fr="Rentabilisé dès la première facture d'assurance." data-en="Pays for itself on the first insurance bill." data-it="Si ripaga alla prima bolletta dell'assicurazione." data-de="Amortisiert sich mit der ersten Versicherungsrechnung." class="translatable text-gray-500 mb-8 border-b pb-8">Rentabilisé dès la première facture d'assurance.</p>
+                    
+                    <!-- BOUTON D'ACCÈS QUI SIMULE L'ACHAT/LOGIN -->
+                    <button onclick="toggleView('premium')" data-fr="Acheter & Accéder à l'Espace" data-en="Buy & Access the Space" data-it="Acquista e Accedi allo Spazio" data-de="Kaufen & Zugang erhalten" class="translatable w-full bg-swissred text-white py-4 rounded-xl font-bold text-xl hover:bg-red-700 transition-colors duration-300 shadow-lg mb-4">
+                        Acheter & Accéder à l'Espace
+                    </button>
+                    <div class="flex items-center justify-center gap-2 text-sm text-gray-500 font-medium">
+                        <span data-fr="🔒 Paiement TWINT & Cartes sécurisé" data-en="🔒 Secure TWINT & Card Payment" data-it="🔒 Pagamento Sicuro TWINT e Carte" data-de="🔒 Sichere TWINT & Kartenzahlung" class="translatable">🔒 Paiement TWINT & Cartes sécurisé</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <footer class="bg-white border-t border-gray-100 py-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-gray-400 text-sm">
+                <p data-fr="&copy; 2026 The Swiss Blueprint. Tous droits réservés." data-en="&copy; 2026 The Swiss Blueprint. All rights reserved." data-it="&copy; 2026 The Swiss Blueprint. Tutti i diritti riservati." data-de="&copy; 2026 The Swiss Blueprint. Alle Rechte vorbehalten." class="translatable mb-2">&copy; 2026 The Swiss Blueprint. Tous droits réservés.</p>
+                <p data-fr="Indépendant. Non affilié à l'EPFL, l'UNIL, la Confédération Suisse ou toute assurance mentionnée." data-en="Independent. Not affiliated with EPFL, UNIL, the Swiss Confederation or any mentioned insurance." data-it="Indipendente. Non affiliato con EPFL, UNIL, la Confederazione Svizzera o qualsiasi assicurazione menzionata." data-de="Unabhängig. Nicht verbunden mit EPFL, UNIL, der Schweizerischen Eidgenossenschaft oder einer genannten Versicherung." class="translatable mt-2 font-medium text-gray-500">Indépendant. Non affilié à l'EPFL, l'UNIL, la Confédération Suisse ou toute assurance mentionnée.</p>
+                <p data-fr="*Clause de non-responsabilité : Les chiffres d'économies (+1030 CHF) sont des estimations basées sur la comparaison entre les tarifs standards adultes et les tarifs optimisés. Les résultats réels varient selon la situation individuelle. Ce document a une visée purement éducative et ne constitue pas un conseil financier, juridique ou en assurance régulé par la FINMA." data-en="*Disclaimer: Savings figures (+1030 CHF) are estimates based on comparing standard adult rates with optimized rates. Actual results vary by individual situation. This document is for educational purposes only and does not constitute financial, legal, or insurance advice regulated by FINMA." data-it="*Dichiarazione di non responsabilità: Le cifre relative ai risparmi (+1030 CHF) sono stime basate sul confronto tra tariffe standard per adulti e tariffe ottimizzate. I risultati effettivi variano in base alla situazione individuale. Questo documento ha scopo puramente educativo e non costituisce consulenza finanziaria, legale o assicurativa regolamentata dalla FINMA." data-de="*Haftungsausschluss: Die Einsparungszahlen (+1030 CHF) sind Schätzungen, die auf dem Vergleich zwischen Standard-Erwachsenentarifen und optimierten Tarifen basieren. Die tatsächlichen Ergebnisse variieren je nach individueller Situation. Dieses Dokument dient ausschließlich Bildungszwecken und stellt keine von der FINMA regulierte Finanz-, Rechts- oder Versicherungsberatung dar." class="translatable text-xs text-gray-400 max-w-4xl mx-auto leading-relaxed mt-4">
+                    *Clause de non-responsabilité : Les chiffres d'économies (+1030 CHF) sont des estimations basées sur la comparaison entre les tarifs standards adultes et les tarifs optimisés. Les résultats réels varient selon la situation individuelle. Ce document a une visée purement éducative et ne constitue pas un conseil financier, juridique ou en assurance régulé par la FINMA.
+                </p>
+                <div class="mt-6 space-x-6 flex justify-center items-center">
+                    <button onclick="toggleView('legal', 'cgv')" class="underline hover:text-gray-500 translatable" data-fr="Conditions Générales (CGV)" data-en="Terms & Conditions" data-it="Termini e Condizioni" data-de="AGB">Conditions Générales (CGV)</button>
+                    <button onclick="toggleView('legal', 'privacy')" class="underline hover:text-gray-500 translatable" data-fr="Confidentialité" data-en="Privacy Policy" data-it="Privacy Policy" data-de="Datenschutz">Confidentialité</button>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <!-- ========== FIN VUE PUBLIQUE ============ -->
+
+
+    <!-- ========================================== -->
+    <!-- ========== VUE LÉGALE (CGV/PRIVACY) ====== -->
+    <!-- ========================================== -->
+    <div id="legal-view" class="fade-out hidden w-full bg-white min-h-screen pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto">
+            <button onclick="toggleView('public')" class="text-navyblue font-bold hover:text-swissred transition mb-8 flex items-center gap-2">
+                <span class="text-xl">←</span> <span class="translatable" data-fr="Retour au site" data-en="Back to site" data-it="Torna al sito" data-de="Zurück zur Website">Retour au site</span>
+            </button>
+
+            <div class="flex gap-6 mb-10 border-b border-gray-200">
+                <button onclick="showLegalTab('cgv')" id="tab-btn-cgv" class="legal-tab-btn pb-4 font-bold text-swissred border-b-2 border-swissred translatable" data-fr="Conditions Générales de Vente" data-en="Terms & Conditions" data-it="Termini e Condizioni" data-de="AGB">Conditions Générales de Vente</button>
+                <button onclick="showLegalTab('privacy')" id="tab-btn-privacy" class="legal-tab-btn pb-4 font-bold text-gray-400 hover:text-inkblack transition-colors translatable" data-fr="Politique de Confidentialité" data-en="Privacy Policy" data-it="Privacy Policy" data-de="Datenschutz">Politique de Confidentialité</button>
+            </div>
+
+            <!-- CGV -->
+            <div id="legal-content-cgv" class="legal-tab-content block prose max-w-none text-gray-700 space-y-6">
+                <h1 class="text-3xl font-serif font-bold text-navyblue mb-8">Conditions Générales de Vente (CGV)</h1>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-inkblack mb-2">1. Indépendance et Marques</h3>
+                    <p>Le produit "The Swiss Blueprint" est une publication indépendante éditée à titre informatif. Ce site et ses éditeurs ne sont en aucun cas affiliés, soutenus, sponsorisés ou approuvés par l'EPFL, l'UNIL, la FMEL, ou toute autre institution publique, marque commerciale ou compagnie d'assurance (ex: Swisscare, Migros, Comparis) mentionnée dans le contenu. Les marques citées appartiennent à leurs propriétaires respectifs et sont utilisées ici à des fins purement descriptives et éducatives.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-inkblack mb-2">2. Nature des informations (Absence de conseil régulé)</h3>
+                    <p>Les informations, stratégies et "hacks" partagés dans ce guide reflètent les expériences personnelles de ses auteurs et des données publiques. "The Swiss Blueprint" n'est pas un intermédiaire en assurance, ni un conseiller financier agréé par la FINMA. Les informations concernant la LAMal ou toute autre assurance sont fournies à titre strictement indicatif. Il incombe à l'utilisateur de vérifier l'adéquation, la validité et la légalité de ses démarches auprès des autorités cantonales compétentes (OVAM, SAM, etc.) ou d'un professionnel agréé avant toute souscription ou résiliation.</p>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-inkblack mb-2">3. Limitation de responsabilité</h3>
+                    <p>L'éditeur de "The Swiss Blueprint" décline toute responsabilité quant aux conséquences directes ou indirectes (financières, légales, administratives) résultant de l'application des méthodes décrites dans le guide. Les lois suisses et les conditions des prestataires évoluent. L'utilisateur est le seul et unique responsable du respect de ses délais légaux (notamment le délai de 3 mois pour l'assurance maladie), de la véracité des dossiers qu'il soumet (notamment aux régies immobilières) et des contrats qu'il signe.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-swissred mb-2">4. Absence de Droit de Rétractation et Non-Remboursement</h3>
+                    <p>S'agissant de la fourniture d'un contenu numérique non fourni sur un support matériel, l'utilisateur accepte expressément que l'exécution du contrat commence dès la validation du paiement et <strong>renonce de fait à son droit de rétractation standard</strong>.</p>
+                    <p>En raison de la nature de la consultation financière et des informations de grande valeur délivrées instantanément, <strong>aucun remboursement ne sera accordé sous aucun prétexte</strong> (incluant mais ne se limitant pas à : non-application des méthodes, changement d'avis, ou inapplicabilité des méthodes au profil spécifique de l'utilisateur). Le seul mécanisme permettant au client de récupérer financièrement son investissement initial est la participation active à notre Programme Ambassadeur (Parrainage).</p>
+                </div>
+            </div>
+
+            <!-- PRIVACY -->
+            <div id="legal-content-privacy" class="legal-tab-content hidden prose max-w-none text-gray-700 space-y-6">
+                <h1 class="text-3xl font-serif font-bold text-navyblue mb-8">Politique de Confidentialité</h1>
+                <p>La protection de vos données est une priorité. Dans le cadre de l'utilisation de "The Swiss Blueprint", nous collectons uniquement les informations strictement nécessaires au traitement de vos commandes et à la sécurisation de vos accès.</p>
+                
+                <div>
+                    <h3 class="text-xl font-bold text-inkblack mb-2">Données collectées</h3>
+                    <p>Nous traitons votre adresse e-mail et votre nom lors du paiement. Le traitement des données financières (cartes bancaires, TWINT) est assuré intégralement par nos prestataires de paiement sécurisés (Stripe). Nous ne stockons aucune donnée bancaire sur nos serveurs.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-inkblack mb-2">Utilisation des données</h3>
+                    <p>Vos informations sont utilisées pour générer votre licence d'accès, personnaliser votre tableau de bord membre, et vous transmettre les mises à jour majeures du système financier suisse pouvant impacter vos économies. Vous ne serez pas inscrit à des listes d'envoi tierces.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ========== FIN VUE LÉGALE ============ -->
+
+
+    <!-- ========================================== -->
+    <!-- ========== VUE PREMIUM (DASHBOARD) ======= -->
+    <!-- ========================================== -->
+    <div id="premium-view" class="fade-out hidden h-screen w-full bg-pearlgrey overflow-hidden">
+        
+        <!-- SIDEBAR -->
+        <aside class="w-72 bg-navyblue text-white flex-shrink-0 flex flex-col h-full shadow-2xl z-20 hidden md:flex">
+            <div class="p-6 border-b border-gray-800">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-8 h-8 bg-swissred text-white flex items-center justify-center font-bold text-xl rounded">+</div>
+                    <h1 class="font-serif font-bold text-xl tracking-wide leading-tight">The Swiss<br>Blueprint</h1>
+                </div>
+                <div class="inline-block bg-white/10 px-2 py-1 rounded text-[10px] font-bold tracking-widest text-gray-300 uppercase mt-2">
+                    Espace Premium
+                </div>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto py-6 premium-scrollbar" id="sidebar-nav">
+                <ul class="space-y-1">
+                    <li><a href="#prem-intro" data-fr="🏁 Accueil & ROI" data-en="🏁 Home & ROI" data-it="🏁 Home & ROI" data-de="🏁 Start & ROI" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🏁 Accueil & ROI</a></li>
+                    <li><a href="#prem-mod1" data-fr="🏥 1. Assurance (LAMal)" data-en="🏥 1. Insurance (LAMal)" data-it="🏥 1. Assicurazione (LAMal)" data-de="🏥 1. Versicherung (LAMal)" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🏥 1. Assurance (LAMal)</a></li>
+                    <li><a href="#prem-mod2" data-fr="🏠 2. Immobilier" data-en="🏠 2. Housing" data-it="🏠 2. Alloggio" data-de="🏠 2. Immobilien" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🏠 2. Immobilier</a></li>
+                    <li><a href="#prem-mod3" data-fr="🛒 3. Alimentation" data-en="🛒 3. Food Survival" data-it="🛒 3. Alimentazione" data-de="🛒 3. Ernährung" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🛒 3. Alimentation</a></li>
+                    <li><a href="#prem-mod4" data-fr="🚆 4. Télécoms & Transports" data-en="🚆 4. Telecoms & Transport" data-it="🚆 4. Telecom. e Trasporti" data-de="🚆 4. Telekom & Verkehr" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🚆 4. Télécoms & Transports</a></li>
+                    <li><a href="#prem-mod5" data-fr="🎓 5. Sport & Revenus" data-en="🎓 5. Sports & Income" data-it="🎓 5. Sport e Reddito" data-de="🎓 5. Sport & Einkommen" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🎓 5. Sport & Revenus</a></li>
+                    <li><a href="#prem-mod6" data-fr="🛡️ 6. L'Arme Comparis" data-en="🛡️ 6. The Comparis Weapon" data-it="🛡️ 6. L'Arma Comparis" data-de="🛡️ 6. Die Comparis Waffe" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🛡️ 6. L'Arme Comparis</a></li>
+                    <li><a href="#prem-actions" data-fr="🚀 Plan d'Action" data-en="🚀 Action Plan" data-it="🚀 Piano d'Azione" data-de="🚀 Aktionsplan" class="translatable nav-link block px-6 py-3 text-sm text-gray-400 border-l-4 border-transparent hover:bg-white/5 hover:text-white transition-colors">🚀 Plan d'Action</a></li>
+                </ul>
+            </nav>
+
+            <div class="p-5 border-t border-gray-800 bg-black/20">
+                <div class="flex items-center gap-3 mb-4 justify-center">
+                    <button id="lang-prem-fr" onclick="switchLanguage('fr')" class="text-white font-bold border-b-2 border-white pb-1 transition-colors text-xs">FR</button>
+                    <span class="text-gray-600 text-xs">|</span>
+                    <button id="lang-prem-en" onclick="switchLanguage('en')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-1 transition-colors text-xs">EN</button>
+                    <span class="text-gray-600 text-xs">|</span>
+                    <button id="lang-prem-it" onclick="switchLanguage('it')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-1 transition-colors text-xs">IT</button>
+                    <span class="text-gray-600 text-xs">|</span>
+                    <button id="lang-prem-de" onclick="switchLanguage('de')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-1 transition-colors text-xs">DE</button>
+                </div>
+                
+                <button onclick="toggleView('public')" data-fr="<span>⬅️</span> Déconnexion" data-en="<span>⬅️</span> Logout" data-it="<span>⬅️</span> Disconnetti" data-de="<span>⬅️</span> Abmelden" class="translatable w-full text-left text-xs text-gray-400 hover:text-white mb-4 flex items-center gap-2">
+                    <span>⬅️</span> Déconnexion
+                </button>
+                <p class="text-[10px] text-gray-500 mb-1 font-mono uppercase tracking-wider">Licence accordée à :</p>
+                <p class="text-sm font-bold text-white truncate">Nouveau Membre</p>
+                <p class="text-xs text-gray-400 truncate">membre@epfl.ch</p>
+            </div>
+        </aside>
+
+        <!-- MAIN PREMIUM CONTENT AREA -->
+        <main class="flex-1 h-full overflow-y-auto relative scroll-smooth premium-scrollbar" id="main-scroll-area">
+            
+            <div class="md:hidden bg-navyblue text-white p-4 sticky top-0 z-30 shadow-md flex flex-col gap-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center gap-2">
+                        <div class="w-6 h-6 bg-swissred text-white flex items-center justify-center font-bold text-sm rounded">+</div>
+                        <h1 class="font-serif font-bold text-lg">Espace Premium</h1>
+                    </div>
+                    <button onclick="toggleView('public')" data-fr="Déconnexion" data-en="Logout" data-it="Disconnetti" data-de="Abmelden" class="translatable text-xs bg-white/20 px-3 py-1 rounded">Déconnexion</button>
+                </div>
+                <div class="flex items-center justify-center gap-3">
+                    <button id="lang-prem-mob-fr" onclick="switchLanguage('fr')" class="text-white font-bold border-b-2 border-white pb-0.5 transition-colors text-[10px]">FR</button>
+                    <span class="text-gray-500 text-[10px]">|</span>
+                    <button id="lang-prem-mob-en" onclick="switchLanguage('en')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-0.5 transition-colors text-[10px]">EN</button>
+                    <span class="text-gray-500 text-[10px]">|</span>
+                    <button id="lang-prem-mob-it" onclick="switchLanguage('it')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-0.5 transition-colors text-[10px]">IT</button>
+                    <span class="text-gray-500 text-[10px]">|</span>
+                    <button id="lang-prem-mob-de" onclick="switchLanguage('de')" class="text-gray-400 hover:text-white border-b-2 border-transparent pb-0.5 transition-colors text-[10px]">DE</button>
+                </div>
+            </div>
+
+            <article class="max-w-4xl mx-auto px-6 py-12 md:py-20 lg:px-12 space-y-24">
+                
+                <section id="prem-intro" class="prem-section scroll-mt-20">
+                    <div class="bg-blue-900/10 border border-blue-800/30 p-4 rounded-lg mb-8 text-xs text-blue-900">
+                        <strong data-fr="Avis Légal :" data-en="Legal Notice:" data-it="Avviso Legale:" data-de="Rechtlicher Hinweis:" class="translatable font-bold">Avis Légal :</strong>
+                        <span data-fr="Les informations de cet espace sont éducatives. En appliquant ces méthodes (notamment les démarches administratives LAMal et la signature de baux), vous agissez sous votre entière responsabilité. Vérifiez toujours les conditions officielles des prestataires." data-en="The information in this space is educational. By applying these methods (especially LAMal procedures and signing leases), you act under your own responsibility. Always check the official conditions of providers." data-it="Le informazioni in questo spazio sono educative. Applicando questi metodi (in particolare le procedure LAMal e la firma dei contratti d'affitto), agisci sotto la tua esclusiva responsabilità. Controlla sempre le condizioni ufficiali dei fornitori." data-de="Die Informationen in diesem Bereich sind lehrreich. Wenn Sie diese Methoden anwenden (insbesondere LAMal-Verfahren und das Unterzeichnen von Mietverträgen), handeln Sie in eigener Verantwortung. Überprüfen Sie immer die offiziellen Bedingungen der Anbieter." class="translatable">Les informations de cet espace sont éducatives. En appliquant ces méthodes (notamment les démarches administratives LAMal et la signature de baux), vous agissez sous votre entière responsabilité. Vérifiez toujours les conditions officielles des prestataires.</span>
+                    </div>
+
+                    <p data-fr="Le Manuel de Survie Financière" data-en="The Financial Survival Manual" data-it="Il Manuale di Sopravvivenza Finanziaria" data-de="Das finanzielle Überlebenshandbuch" class="translatable text-swissred font-bold tracking-widest uppercase text-sm mb-4">Le Manuel de Survie Financière</p>
+                    <h1 data-fr="Bienvenue dans la jungle. <br>La Suisse ne fait pas de cadeaux." data-en="Welcome to the jungle. <br>Switzerland gives no gifts." data-it="Benvenuti nella giungla. <br>La Svizzera non fa regali." data-de="Willkommen im Dschungel. <br>Die Schweiz macht keine Geschenke." class="translatable text-4xl sm:text-5xl font-serif font-bold text-navyblue mb-8 leading-tight">
+                        Bienvenue dans la jungle. <br>La Suisse ne fait pas de cadeaux.
+                    </h1>
+                    
+                    <div class="prose prose-lg text-gray-600 mb-12">
+                        <p data-fr="Tu viens d'arriver (ou tu vas arriver) dans l'un des pays les plus riches du monde. Félicitations. Mais voici la réalité qu'aucune brochure universitaire ne t'a dite : <strong>le système suisse est conçu pour extraire le maximum d'argent de ceux qui ne le comprennent pas.</strong>" data-en="You have just arrived (or will arrive) in one of the richest countries in the world. Congratulations. But here is the reality no university brochure told you: <strong>the Swiss system is designed to extract maximum money from those who don't understand it.</strong>" data-it="Sei appena arrivato (o arriverai) in uno dei paesi più ricchi del mondo. Congratulazioni. Ma ecco la realtà che nessuna brochure universitaria ti ha detto: <strong>il sistema svizzero è progettato per estrarre il massimo del denaro da chi non lo capisce.</strong>" data-de="Du bist gerade in einem der reichsten Länder der Welt angekommen (oder wirst bald ankommen). Glückwunsch. Aber hier ist die Realität, die dir keine Uni-Broschüre verraten hat: <strong>Das Schweizer System ist darauf ausgelegt, das Maximum an Geld von denen herauszuholen, die es nicht verstehen.</strong>" class="translatable mb-4">Tu viens d'arriver (ou tu vas arriver) dans l'un des pays les plus riches du monde. Félicitations. Mais voici la réalité qu'aucune brochure universitaire ne t'a dite : <strong>le système suisse est conçu pour extraire le maximum d'argent de ceux qui ne le comprennent pas.</strong></p>
+                        <p data-fr="Ce guide n'est pas un blog de voyage. C'est une consultation financière condensée. Laisse tes habitudes de ton pays d'origine à la frontière. Ici, on joue selon les règles suisses. Et on va utiliser leurs propres failles légales." data-en="This guide is not a travel blog. It's a condensed financial consultation. Leave your home country habits at the border. Here, we play by Swiss rules. And we will use their own legal loopholes." data-it="Questa guida non è un blog di viaggi. È una consulenza finanziaria condensata. Lascia le abitudini del tuo paese d'origine al confine. Qui si gioca secondo le regole svizzere. E useremo le loro stesse scappatoie legali." data-de="Dieser Leitfaden ist kein Reiseblog. Es ist eine komprimierte Finanzberatung. Lass die Gewohnheiten deines Heimatlandes an der Grenze. Hier spielen wir nach Schweizer Regeln. Und wir werden ihre eigenen rechtlichen Schlupflöcher nutzen." class="translatable font-medium text-inkblack">Ce guide n'est pas un blog de voyage. C'est une consultation financière condensée. Laisse tes habitudes de ton pays d'origine à la frontière. Ici, on joue selon les règles suisses. Et on va utiliser leurs propres failles légales.</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 pb-6 mb-6">
+                            <div>
+                                <h2 data-fr="Validation du Retour sur Investissement" data-en="Return on Investment Validation" data-it="Convalida del Ritorno sull'Investimento" data-de="Validierung der Kapitalrendite (ROI)" class="translatable text-2xl font-bold text-inkblack">Validation du Retour sur Investissement</h2>
+                                <p data-fr="Économies mensuelles estimées en appliquant les méthodes ci-dessous." data-en="Estimated monthly savings by applying the methods below." data-it="Risparmi mensili stimati applicando i metodi sottostanti." data-de="Geschätzte monatliche Einsparungen durch Anwendung der untenstehenden Methoden." class="translatable text-sm text-gray-500 mt-1">Économies mensuelles estimées en appliquant les méthodes ci-dessous.</p>
+                            </div>
+                            <div class="mt-4 sm:mt-0 text-right bg-green-50 px-4 py-2 rounded-xl border border-green-100">
+                                <p data-fr="Total Économisé" data-en="Total Saved" data-it="Totale Risparmiato" data-de="Insgesamt gespart" class="translatable text-xs font-bold text-green-600 uppercase tracking-wider">Total Économisé</p>
+                                <p class="text-3xl font-black text-green-700"><span data-fr="Jusqu'à" data-en="Up to" data-it="Fino a" data-de="Bis zu" class="translatable text-xl">Jusqu'à</span> 1030 CHF*<span data-fr="/mois" data-en="/month" data-it="/mese" data-de="/Monat" class="translatable text-base font-medium">/mois</span></p>
+                            </div>
+                        </div>
+                        <div class="premium-chart-container">
+                            <canvas id="premiumRoiChart"></canvas>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prem-mod1" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-navyblue text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">1</div>
+                        <h2 data-fr="L'Assurance Maladie (LAMal)" data-en="Health Insurance (LAMal)" data-it="Assicurazione Malattia (LAMal)" data-de="Krankenversicherung (LAMal)" class="translatable text-3xl sm:text-4xl font-serif font-bold text-navyblue">L'Assurance Maladie (LAMal)</h2>
+                    </div>
+
+                    <div class="bg-red-50 border-l-4 border-swissred p-6 rounded-r-xl mb-8">
+                        <h3 data-fr="<span>⚠️</span> Le Piège" data-en="<span>⚠️</span> The Trap" data-it="<span>⚠️</span> La Trappola" data-de="<span>⚠️</span> Die Falle" class="translatable text-lg font-bold text-red-900 mb-2 flex items-center gap-2"><span>⚠️</span> Le Piège</h3>
+                        <p data-fr="Si tu vas chez une assurance classique (Assura, Groupe Mutuel), on va te facturer le tarif adulte standard : <strong>entre 300 et 400 CHF PAR MOIS</strong>." data-en="If you go to a classic insurance (Assura, Groupe Mutuel), you'll be charged the standard adult rate: <strong>between 300 and 400 CHF PER MONTH</strong>." data-it="Se vai in un'assicurazione classica (Assura, Groupe Mutuel), ti verrà addebitata la tariffa standard per adulti: <strong>tra 300 e 400 CHF AL MESE</strong>." data-de="Wenn du zu einer klassischen Versicherung gehst (Assura, Groupe Mutuel), wird dir der Standard-Erwachsenentarif berechnet: <strong>zwischen 300 und 400 CHF PRO MONAT</strong>." class="translatable text-red-800 text-sm">Si tu vas chez une assurance classique (Assura, Groupe Mutuel), on va te facturer le tarif adulte standard : <strong>entre 300 et 400 CHF PAR MOIS</strong>.</p>
+                    </div>
+
+                    <h3 data-fr="L'Optimisation Légale : Le Droit à l'Exemption" data-en="Legal Optimization: The Right to Exemption" data-it="Ottimizzazione Legale: Il Diritto all'Esenzione" data-de="Legale Optimierung: Das Recht auf Befreiung" class="translatable text-xl font-bold text-inkblack mb-4">L'Optimisation Légale : Le Droit à l'Exemption</h3>
+                    <p data-fr="La loi suisse autorise les étudiants étrangers à être exemptés de l'obligation de s'affilier à la LAMal classique, à condition de prouver une couverture équivalente." data-en="Swiss law allows foreign students to be exempt from the obligation to join standard LAMal, provided they prove equivalent coverage." data-it="La legge svizzera consente agli studenti stranieri di essere esentati dall'obbligo di aderire alla LAMal standard, a condizione di dimostrare una copertura equivalente." data-de="Das Schweizer Recht erlaubt es ausländischen Studierenden, von der Pflicht zum Beitritt zur Standard-LAMal befreit zu werden, sofern sie eine gleichwertige Deckung nachweisen." class="translatable text-gray-600 mb-6">La loi suisse autorise les étudiants étrangers à être exemptés de l'obligation de s'affilier à la LAMal classique, à condition de prouver une couverture équivalente.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h4 data-fr="🇪🇺 Cas A : UE/AELE" data-en="🇪🇺 Case A: EU/EFTA" data-it="🇪🇺 Caso A: UE/AELS" data-de="🇪🇺 Fall A: EU/EFTA" class="translatable font-bold text-navyblue mb-4">🇪🇺 Cas A : UE/AELE</h4>
+                            <ul class="space-y-4 text-sm text-gray-700">
+                                <li><strong data-fr="1." data-en="1." data-it="1." data-de="1." class="translatable">1.</strong> <span data-fr="Demande ta Carte Européenne d'Assurance Maladie (CEAM) avant de partir." data-en="Request your European Health Insurance Card (EHIC) before leaving." data-it="Richiedi la tua Tessera Europea di Assicurazione Malattia (TEAM) prima di partire." data-de="Beantrage deine Europäische Krankenversicherungskarte (EKVK) vor der Abreise." class="translatable">Demande ta Carte Européenne d'Assurance Maladie (CEAM) avant de partir.</span></li>
+                                <li><strong data-fr="2." data-en="2." data-it="2." data-de="2." class="translatable">2.</strong> <span data-fr="Une fois en Suisse, va sur le site de l'OVAM (Vaud) ou du SAM (Genève)." data-en="Once in Switzerland, go to the OVAM (Vaud) or SAM (Geneva) website." data-it="Una volta in Svizzera, vai sul sito dell'OVAM (Vaud) o del SAM (Ginevra)." data-de="Sobald du in der Schweiz bist, gehe auf die Website des OVAM (Waadt) oder SAM (Genf)." class="translatable">Une fois en Suisse, va sur le site de l'OVAM (Vaud) ou du SAM (Genève).</span></li>
+                                <li><strong data-fr="3." data-en="3." data-it="3." data-de="3." class="translatable">3.</strong> <span data-fr="Remplis le formulaire d'exemption avec la copie de ta CEAM et de ton attestation d'études." data-en="Fill out the exemption form with a copy of your EHIC and your study certificate." data-it="Compila il modulo d'esenzione con una copia della tua TEAM e del tuo certificato di studi." data-de="Fülle das Befreiungsformular mit einer Kopie deiner EKVK und deiner Studienbescheinigung aus." class="translatable">Remplis le formulaire d'exemption avec la copie de ta CEAM et de ton attestation d'études.</span></li>
+                                <li class="pt-3 border-t border-gray-100"><strong data-fr="Résultat :" data-en="Result:" data-it="Risultato:" data-de="Ergebnis:" class="translatable text-green-600">Résultat :</strong> <span data-fr="Tu restes couvert par ton pays. Coût <strong>0 CHF</strong>." data-en="You remain covered by your country. Cost <strong>0 CHF</strong>." data-it="Rimani coperto dal tuo paese. Costo <strong>0 CHF</strong>." data-de="Du bleibst über dein Land versichert. Kosten <strong>0 CHF</strong>." class="translatable">Tu restes couvert par ton pays. Coût <strong>0 CHF</strong>.</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                            <h4 data-fr="🌍 Cas B : Hors UE (Afrique, Amériques...)" data-en="🌍 Case B: Non-EU (Africa, Americas...)" data-it="🌍 Caso B: Extra-UE (Africa, Americhe...)" data-de="🌍 Fall B: Nicht-EU (Afrika, Amerika...)" class="translatable font-bold text-navyblue mb-4">🌍 Cas B : Hors UE (Afrique, Amériques...)</h4>
+                            <ul class="space-y-4 text-sm text-gray-700">
+                                <li><strong data-fr="1." data-en="1." data-it="1." data-de="1." class="translatable">1.</strong> <span data-fr="Ne contacte <strong>jamais</strong> les assurances classiques." data-en="<strong>Never</strong> contact classic insurances." data-it="Non contattare <strong>mai</strong> le assicurazioni classiche." data-de="Kontaktiere <strong>niemals</strong> klassische Versicherungen." class="translatable">Ne contacte <strong>jamais</strong> les assurances classiques.</span></li>
+                                <li><strong data-fr="2." data-en="2." data-it="2." data-de="2." class="translatable">2.</strong> <span data-fr="Va chez <a href='https://swisscare.com/fr/accueil' target='_blank' class='text-blue-600 hover:underline font-medium'>Swisscare</a> ou Scorestudies (spécialisés étudiants étrangers)." data-en="Go to <a href='https://swisscare.com/fr/accueil' target='_blank' class='text-blue-600 hover:underline font-medium'>Swisscare</a> or Scorestudies (specialized for foreign students)." data-it="Vai su <a href='https://swisscare.com/fr/accueil' target='_blank' class='text-blue-600 hover:underline font-medium'>Swisscare</a> o Scorestudies (specializzati per studenti stranieri)." data-de="Gehe zu <a href='https://swisscare.com/fr/accueil' target='_blank' class='text-blue-600 hover:underline font-medium'>Swisscare</a> oder Scorestudies (spezialisiert auf ausländische Studierende)." class="translatable">Va chez <a href="https://swisscare.com/fr/accueil" target="_blank" class="text-blue-600 hover:underline font-medium">Swisscare</a> ou Scorestudies (spécialisés étudiants étrangers).</span></li>
+                                <li><strong data-fr="3." data-en="3." data-it="3." data-de="3." class="translatable">3.</strong> <span data-fr="Souscris en ligne, n'hésite pas à prendre une franchise (1000-2000 CHF)." data-en="Subscribe online, don't hesitate to take a deductible (1000-2000 CHF)." data-it="Abbonati online, non esitare a prendere una franchigia (1000-2000 CHF)." data-de="Abonniere online, zögere nicht, einen Selbstbehalt (1000-2000 CHF) zu wählen." class="translatable">Souscris en ligne, n'hésite pas à prendre une franchise (1000-2000 CHF).</span></li>
+                                <li><strong data-fr="4." data-en="4." data-it="4." data-de="4." class="translatable">4.</strong> <span data-fr="Envoie l'attestation reçue au canton avec ton formulaire d'exemption." data-en="Send the received certificate to the canton with your exemption form." data-it="Invia il certificato ricevuto al cantone con il tuo modulo di esenzione." data-de="Sende die erhaltene Bescheinigung mit deinem Befreiungsformular an den Kanton." class="translatable">Envoie l'attestation reçue au canton avec ton formulaire d'exemption.</span></li>
+                                <li class="pt-3 border-t border-gray-100"><strong data-fr="Résultat :" data-en="Result:" data-it="Risultato:" data-de="Ergebnis:" class="translatable text-green-600">Résultat :</strong> <span data-fr="Prime d'environ <strong>65 CHF / mois</strong> au lieu de 350 CHF." data-en="Premium of about <strong>65 CHF / month</strong> instead of 350 CHF." data-it="Premio di circa <strong>65 CHF / mese</strong> invece di 350 CHF." data-de="Prämie von ca. <strong>65 CHF / Monat</strong> anstelle von 350 CHF." class="translatable">Prime d'environ <strong>65 CHF / mois</strong> au lieu de 350 CHF.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-inkblack text-white p-6 rounded-xl mt-6 relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 text-swissred opacity-20 text-8xl">⏳</div>
+                        <h4 data-fr="ALERTE ROUGE : Le Délai de 3 Mois" data-en="RED ALERT: The 3-Month Deadline" data-it="ALLARME ROSSO: La Scadenza di 3 Mesi" data-de="ALARMSTUFE ROT: Die 3-Monats-Frist" class="translatable font-bold text-swissred mb-2 text-lg relative z-10">ALERTE ROUGE : Le Délai de 3 Mois</h4>
+                        <p data-fr="Tu DOIS faire cette démarche dans les 3 mois suivant ton arrivée. Si tu rates le délai d'un seul jour, le canton va t'affilier d'office à une assurance au prix fort (350+ CHF) et c'est irréversible pour plusieurs années. Ils te feront payer les mois manqués avec effet rétroactif." data-en="You MUST do this within 3 months of your arrival. Miss the deadline by one day, and the canton will officially affiliate you to a high-price insurance (350+ CHF) and it is irreversible for several years. They will make you pay the missed months retroactively." data-it="DEVI fare questo passo entro 3 mesi dal tuo arrivo. Se salti la scadenza di un solo giorno, il cantone ti affilierà d'ufficio a un'assicurazione ad alto prezzo (350+ CHF) ed è irreversibile per diversi anni. Ti faranno pagare i mesi persi retroattivamente." data-de="Du MUSST diesen Schritt innerhalb von 3 Monaten nach deiner Ankunft tun. Verpasst du die Frist um einen einzigen Tag, wird der Kanton dich von Amts wegen einer teuren Versicherung (350+ CHF) anschließen, was für mehrere Jahre irreversibel ist. Sie werden dich die verpassten Monate rückwirkend zahlen lassen." class="translatable text-sm text-gray-300 relative z-10 leading-relaxed">
+                            Tu DOIS faire cette démarche dans les 3 mois suivant ton arrivée. Si tu rates le délai d'un seul jour, le canton va t'affilier d'office à une assurance au prix fort (350+ CHF) et c'est irréversible pour plusieurs années. Ils te feront payer les mois manqués avec effet rétroactif.
+                        </p>
+                    </div>
+                </section>
+
+                <section id="prem-mod2" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-navyblue text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">2</div>
+                        <h2 data-fr="La Guerre de l'Immobilier" data-en="The Housing War" data-it="La Guerra Immobiliare" data-de="Der Immobilienkrieg" class="translatable text-3xl sm:text-4xl font-serif font-bold text-navyblue">La Guerre de l'Immobilier</h2>
+                    </div>
+                    
+                    <p data-fr="Le taux de vacance à Lausanne et Genève est proche de 0%. Les agences reçoivent 100 dossiers par appartement. Sans garant suisse, ton dossier va à la poubelle. Voici la stratégie de survie." data-en="The vacancy rate in Lausanne and Geneva is close to 0%. Agencies receive 100 applications per apartment. Without a Swiss guarantor, your file goes in the trash. Here is the survival strategy." data-it="Il tasso di sfitto a Losanna e Ginevra è vicino allo 0%. Le agenzie ricevono 100 candidature per appartamento. Senza un garante svizzero, il tuo dossier finisce nel cestino. Ecco la strategia di sopravvivenza." data-de="Die Leerstandsquote in Lausanne und Genf liegt nahe bei 0%. Agenturen erhalten 100 Bewerbungen pro Wohnung. Ohne einen Schweizer Bürgen landet dein Dossier im Müll. Hier ist die Überlebensstrategie." class="translatable text-gray-600 mb-8">Le taux de vacance à Lausanne et Genève est proche de 0%. Les agences reçoivent 100 dossiers par appartement. Sans garant suisse, ton dossier va à la poubelle. Voici la stratégie de survie.</p>
+
+                    <div class="space-y-8">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="1. La stratégie du Sniper (FMEL)" data-en="1. The Sniper Strategy (FMEL)" data-it="1. La strategia del Cecchino (FMEL)" data-de="1. Die Sniper-Strategie (FMEL)" class="translatable text-xl font-bold text-inkblack mb-2">1. La stratégie du Sniper (FMEL)</h3>
+                            <p data-fr="C'est le Saint Graal du logement étudiant (fmel.ch). L'erreur fatale de 90% des étudiants est de tout cocher en espérant avoir plus de chance." data-en="This is the Holy Grail of student housing (fmel.ch). The fatal error of 90% of students is to check everything hoping for more luck." data-it="Questo è il Santo Graal degli alloggi per studenti (fmel.ch). L'errore fatale del 90% degli studenti è di spuntare tutto sperando in più fortuna." data-de="Dies ist der Heilige Gral der Studentenwohnheime (fmel.ch). Der fatale Fehler von 90% der Studierenden ist es, alles anzukreuzen in der Hoffnung auf mehr Glück." class="translatable text-sm text-gray-500 mb-4">C'est le Saint Graal du logement étudiant (fmel.ch). L'erreur fatale de 90% des étudiants est de tout cocher en espérant avoir plus de chance.</p>
+                            <ul class="space-y-4 text-sm text-gray-700">
+                                <li class="flex gap-3"><span class="text-green-600 font-bold mt-0.5">✓</span> <div data-fr="<strong>Le Hack :</strong> Sois un sniper. Si tu veux une chambre à moins de 600 CHF ou un vrai studio à moins de 700 CHF, ne coche <em>que</em> tes 1 ou 2 préférences réelles (ex: Falaise, Cèdre, Square, Planète Bleu)." data-en="<strong>The Hack:</strong> Be a sniper. If you want a room under 600 CHF or a real studio under 700 CHF, check <em>only</em> your 1 or 2 real preferences (e.g., Falaise, Cèdre, Square, Planète Bleu)." data-it="<strong>L'Hack:</strong> Sii un cecchino. Se vuoi una stanza a meno di 600 CHF o un vero monolocale a meno di 700 CHF, spunta <em>solo</em> le tue 1 o 2 preferenze reali (es. Falaise, Cèdre, Square, Planète Bleu)." data-de="<strong>Der Hack:</strong> Sei ein Sniper. Wenn du ein Zimmer unter 600 CHF oder ein echtes Studio unter 700 CHF willst, kreuze <em>nur</em> deine 1 oder 2 echten Präferenzen an (z.B. Falaise, Cèdre, Square, Planète Bleu)." class="translatable"><strong>Le Hack :</strong> Sois un sniper. Si tu veux une chambre à moins de 600 CHF ou un vrai studio à moins de 700 CHF, ne coche <em>que</em> tes 1 ou 2 préférences réelles (ex: Falaise, Cèdre, Square, Planète Bleu).</div></li>
+                                <li class="flex gap-3"><span class="text-swissred font-bold mt-0.5">✗</span> <div data-fr="<strong>Le Piège :</strong> Ne te jette pas sur les chambres du Vortex (à >750 CHF) juste par précipitation. Elles sont très bien, mais n'ont rien de plus incroyable que celles des &quot;HUB ville&quot;." data-en="<strong>The Trap:</strong> Don't throw yourself at Vortex rooms (>750 CHF) out of haste. They are fine, but nothing more incredible than the &quot;HUB city&quot; ones." data-it="<strong>La Trappola:</strong> Non gettarti sulle camere Vortex (>750 CHF) per fretta. Vanno bene, ma niente di più incredibile di quelle degli &quot;HUB città&quot;." data-de="<strong>Die Falle:</strong> Stürz dich nicht aus Eile auf Vortex-Zimmer (>750 CHF). Sie sind gut, aber nichts Unglaublicheres als die der &quot;HUB-Stadt&quot;." class="translatable"><strong>Le Piège :</strong> Ne te jette pas sur les chambres du Vortex (à >750 CHF) juste par précipitation. Elles sont très bien, mais n'ont rien de plus incroyable que celles des "HUB ville".</div></li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="2. L'Auto-Refresh (Estudiantines)" data-en="2. The Auto-Refresh (Estudiantines)" data-it="2. L'Auto-Refresh (Estudiantines)" data-de="2. Der Auto-Refresh (Estudiantines)" class="translatable text-xl font-bold text-inkblack mb-2">2. L'Auto-Refresh (Estudiantines)</h3>
+                            <p data-fr="Le portail se met à jour de manière aléatoire, mais très souvent <strong>la nuit (vers minuit) ou très tôt le matin</strong>. Ne regarde pas le site à midi comme tout le monde. Utilise des extensions de navigateur (type <em>Auto-Refresh</em> ou <em>Distill Web Monitor</em>) pour être alerté sur ton téléphone/PC dès qu'une chambre apparaît." data-en="The portal updates randomly, but very often <strong>at night (around midnight) or very early morning</strong>. Don't check the site at noon like everyone else. Use browser extensions (like <em>Auto-Refresh</em> or <em>Distill Web Monitor</em>) to be alerted on your phone/PC as soon as a room appears." data-it="Il portale si aggiorna in modo casuale, ma molto spesso <strong>di notte (verso mezzanotte) o molto presto al mattino</strong>. Non guardare il sito a mezzogiorno come tutti gli altri. Usa estensioni del browser (tipo <em>Auto-Refresh</em> o <em>Distill Web Monitor</em>) per essere avvisato sul tuo telefono/PC non appena appare una stanza." data-de="Das Portal aktualisiert sich zufällig, aber sehr oft <strong>nachts (gegen Mitternacht) oder sehr früh morgens</strong>. Schau nicht mittags wie alle anderen auf die Seite. Nutze Browser-Erweiterungen (wie <em>Auto-Refresh</em> oder <em>Distill Web Monitor</em>), um auf deinem Telefon/PC benachrichtigt zu werden, sobald ein Zimmer erscheint." class="translatable text-sm text-gray-700 leading-relaxed">Le portail se met à jour de manière aléatoire, mais très souvent <strong>la nuit (vers minuit) ou très tôt le matin</strong>. Ne regarde pas le site à midi comme tout le monde. Utilise des extensions de navigateur (type <em>Auto-Refresh</em> ou <em>Distill Web Monitor</em>) pour être alerté sur ton téléphone/PC dès qu'une chambre apparaît.</p>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="3. Le Dossier &quot;Anti-Rejet&quot; (Marché Privé)" data-en="3. The &quot;Anti-Rejection&quot; Dossier (Private Market)" data-it="3. Il Dossier &quot;Anti-Rifiuto&quot; (Mercato Privato)" data-de="3. Das &quot;Anti-Ablehnungs&quot;-Dossier (Privatmarkt)" class="translatable text-xl font-bold text-inkblack mb-4">3. Le Dossier "Anti-Rejet" (Marché Privé)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                                    <strong class="text-navyblue block mb-2 font-serif text-lg">SwissCaution / Firstcaution</strong>
+                                    <p data-fr="Au lieu de bloquer 3 mois de loyer (3000 CHF) à la banque, ces organismes se portent garants contre une prime annuelle (~150 CHF/an). Mentionner &quot;Caution gérée par SwissCaution&quot; rassure immédiatement les régies." data-en="Instead of blocking 3 months' rent (3000 CHF) at the bank, these organizations act as guarantors against an annual premium (~150 CHF/year). Mentioning &quot;Deposit managed by SwissCaution&quot; immediately reassures agencies." data-it="Invece di bloccare 3 mesi di affitto (3000 CHF) in banca, questi organismi fungono da garanti a fronte di un premio annuale (~150 CHF/anno). Menzionare &quot;Cauzione gestita da SwissCaution&quot; rassicura immediatamente le agenzie." data-de="Anstatt 3 Monatsmieten (3000 CHF) bei der Bank zu blockieren, bürgen diese Organisationen gegen eine jährliche Prämie (~150 CHF/Jahr). Die Erwähnung &quot;Kaution verwaltet von SwissCaution&quot; beruhigt Agenturen sofort." class="translatable text-sm text-gray-600">Au lieu de bloquer 3 mois de loyer (3000 CHF) à la banque, ces organismes se portent garants contre une prime annuelle (~150 CHF/an). Mentionner "Caution gérée par SwissCaution" rassure immédiatement les régies.</p>
+                                </div>
+                                <div class="bg-gray-50 p-5 rounded-xl border border-gray-100">
+                                    <strong data-fr="Extrait des poursuites" data-en="Debt Collection Extract" data-it="Estratto delle Esecuzioni" data-de="Betreibungsauszug" class="translatable text-navyblue block mb-2 font-serif text-lg">Extrait des poursuites</strong>
+                                    <p data-fr="Dès l'enregistrement à la commune, demande ce document (17 CHF) à l'Office des poursuites. Il prouve que tu n'as pas de dettes en Suisse. C'est un avantage énorme, voire obligatoire, pour louer." data-en="As soon as you register with the commune, request this document (17 CHF) from the Debt Collection Office. It proves you have no debts in Switzerland. It's a huge advantage, even mandatory, to rent." data-it="Non appena ti registri al comune, richiedi questo documento (17 CHF) all'Ufficio Esecuzioni. Dimostra che non hai debiti in Svizzera. È un enorme vantaggio, quasi obbligatorio, per affittare." data-de="Sobald du dich in der Gemeinde anmeldest, beantrage dieses Dokument (17 CHF) beim Betreibungsamt. Es beweist, dass du keine Schulden in der Schweiz hast. Es ist ein riesiger Vorteil, sogar obligatorisch, um zu mieten." class="translatable text-sm text-gray-600">Dès l'enregistrement à la commune, demande ce document (17 CHF) à l'Office des poursuites. Il prouve que tu n'as pas de dettes en Suisse. C'est un avantage énorme, voire obligatoire, pour louer.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-navyblue text-white p-6 rounded-2xl shadow-sm">
+                                <h3 data-fr="4. Les Zones Géographiques" data-en="4. Geographic Zones" data-it="4. Zone Geografiche" data-de="4. Geografische Zonen" class="translatable text-lg font-bold mb-3">4. Les Zones Géographiques</h3>
+                                <p data-fr="Évite le centre de Lausanne/Genève (sauf miracle absolu). Cherche dans <strong>l'Ouest Lausannois : Renens, Chavannes, Ecublens, Prilly, Bussigny</strong>. C'est desservi par le M1 ou les CFF en 10 min, et les loyers chutent de 20 à 30%." data-en="Avoid the center of Lausanne/Geneva (unless an absolute miracle). Look in <strong>Western Lausanne: Renens, Chavannes, Ecublens, Prilly, Bussigny</strong>. It is served by the M1 or SBB in 10 min, and rents drop by 20 to 30%." data-it="Evita il centro di Losanna/Ginevra (salvo miracoli assoluti). Cerca nell'<strong>Ovest di Losanna: Renens, Chavannes, Ecublens, Prilly, Bussigny</strong>. È servito dalla M1 o FFS in 10 min, e gli affitti scendono del 20-30%." data-de="Meide das Zentrum von Lausanne/Genf (außer bei einem absoluten Wunder). Suche im <strong>Westlichen Lausanne: Renens, Chavannes, Ecublens, Prilly, Bussigny</strong>. Es wird von der M1 oder SBB in 10 Minuten bedient, und die Mieten sinken um 20 bis 30%." class="translatable text-sm text-gray-300">Évite le centre de Lausanne/Genève (sauf miracle absolu). Cherche dans <strong>l'Ouest Lausannois : Renens, Chavannes, Ecublens, Prilly, Bussigny</strong>. C'est desservi par le M1 ou les CFF en 10 min, et les loyers chutent de 20 à 30%.</p>
+                            </div>
+                            <div class="bg-white border-2 border-gold p-6 rounded-2xl shadow-sm relative">
+                                <div data-fr="ALTERNATIVE" data-en="ALTERNATIVE" data-it="ALTERNATIVA" data-de="ALTERNATIVE" class="translatable absolute top-0 right-0 bg-gold text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">ALTERNATIVE</div>
+                                <h3 class="text-lg font-bold text-inkblack mb-2 mt-1">5. Elderli</h3>
+                                <p data-fr="Si désespéré : le logement intergénérationnel. Tu vis chez un senior pour un loyer ridiculement bas en échange d'un peu de présence ou de petits coups de main. Ça te sauve la vie la première année." data-en="If desperate: intergenerational housing. You live with a senior for a ridiculously low rent in exchange for some presence or a little help. It saves your life the first year." data-it="Se disperato: alloggio intergenerazionale. Vivi con un anziano per un affitto ridicolmente basso in cambio di un po' di presenza o piccoli aiuti. Ti salva la vita il primo anno." data-de="Wenn verzweifelt: Mehrgenerationenwohnen. Du lebst bei einem Senior für eine lächerlich geringe Miete im Austausch für etwas Präsenz oder kleine Hilfen. Es rettet dir im ersten Jahr das Leben." class="translatable text-sm text-gray-600 mb-4">Si désespéré : le logement intergénérationnel. Tu vis chez un senior pour un loyer ridiculement bas en échange d'un peu de présence ou de petits coups de main. Ça te sauve la vie la première année.</p>
+                                <a href="https://elderli.ch/" target="_blank" class="text-gold font-bold text-sm hover:underline">Elderli.ch →</a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prem-mod3" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-navyblue text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">3</div>
+                        <h2 data-fr="Survie Alimentaire" data-en="Food Survival" data-it="Sopravvivenza Alimentare" data-de="Überleben beim Essen" class="translatable text-3xl sm:text-4xl font-serif font-bold text-navyblue">Survie Alimentaire</h2>
+                    </div>
+                    
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 mb-6">
+                        <h3 data-fr="La Hiérarchie des Supermarchés" data-en="The Supermarket Hierarchy" data-it="La Gerarchia dei Supermercati" data-de="Die Supermarkt-Hierarchie" class="translatable text-2xl font-bold text-inkblack mb-4">La Hiérarchie des Supermarchés</h3>
+                        <p data-fr="Le piège est de faire ses courses &quot;comme à la maison&quot; dans le magasin le plus proche. Grave ceci dans ta mémoire :" data-en="The trap is shopping &quot;like at home&quot; in the nearest store. Engrave this in your memory:" data-it="La trappola è fare acquisti &quot;come a casa&quot; nel negozio più vicino. Incidi questo nella tua memoria:" data-de="Die Falle ist, &quot;wie zu Hause&quot; im nächstgelegenen Geschäft einzukaufen. Präge dir das in dein Gedächtnis ein:" class="translatable text-sm text-gray-500 mb-6">Le piège est de faire ses courses "comme à la maison" dans le magasin le plus proche. Grave ceci dans ta mémoire :</p>
+
+                        <div class="space-y-4">
+                            <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-red-50 border border-red-100">
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-red-800 text-lg">1.</span>
+                                    <span class="font-bold text-red-900">Manor / Globus</span>
+                                </div>
+                                <span data-fr="Pour les millionnaires. N'y mets pas les pieds." data-en="For millionaires. Do not set foot in there." data-it="Per i milionari. Non metterci piede." data-de="Für Millionäre. Setze keinen Fuß dorthin." class="translatable text-sm text-red-800 sm:w-2/3">Pour les millionnaires. N'y mets pas les pieds.</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-orange-50 border border-orange-100">
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-orange-800 text-lg">2.</span>
+                                    <span class="font-bold text-orange-900">Coop</span>
+                                </div>
+                                <span data-fr="Très cher au quotidien." data-en="Very expensive for daily use." data-it="Molto costoso per l'uso quotidiano." data-de="Sehr teuer für den täglichen Gebrauch." class="translatable text-sm text-orange-800 sm:w-2/3">Très cher au quotidien.</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-yellow-50 border border-yellow-200">
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-yellow-800 text-lg">3.</span>
+                                    <span class="font-bold text-yellow-900">OTTO's</span>
+                                </div>
+                                <span data-fr="Très bien pour acheter des accessoires à bon prix. Ils ont souvent de très bonnes réductions." data-en="Great for buying accessories at good prices. They often have very good discounts." data-it="Ottimo per acquistare accessori a buon prezzo. Hanno spesso ottimi sconti." data-de="Sehr gut, um Zubehör zu günstigen Preisen zu kaufen. Sie haben oft sehr gute Rabatte." class="translatable text-sm text-yellow-800 sm:w-2/3">Très bien pour acheter des accessoires à bon prix. Ils ont souvent de très bonnes réductions.</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-yellow-50 border border-yellow-200">
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-yellow-800 text-lg">4.</span>
+                                    <span class="font-bold text-yellow-900">Migros</span>
+                                </div>
+                                <span data-fr="A de bons prix surtout sur la gamme <strong>&quot;M-Budget&quot;</strong> et a aussi un plus large choix de viande." data-en="Has good prices especially on the <strong>&quot;M-Budget&quot;</strong> range and also has a wider choice of meat." data-it="Ha buoni prezzi soprattutto sulla linea <strong>&quot;M-Budget&quot;</strong> e ha anche una scelta più ampia di carne." data-de="Hat gute Preise, besonders bei der <strong>&quot;M-Budget&quot;</strong> Reihe und hat auch eine größere Fleischauswahl." class="translatable text-sm text-yellow-800 sm:w-2/3">A de bons prix surtout sur la gamme <strong>"M-Budget"</strong> et a aussi un plus large choix de viande.</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center p-4 rounded-xl bg-green-50 border border-green-200">
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-green-800 text-lg">5.</span>
+                                    <span class="font-bold text-green-900">Denner</span>
+                                </div>
+                                <span data-fr="Le discounter suisse. Parfait pour l'alcool, les sodas et les produits de marque bradés." data-en="The Swiss discounter. Perfect for alcohol, sodas and discounted brand products." data-it="Il discount svizzero. Perfetto per alcolici, bibite e prodotti di marca scontati." data-de="Der Schweizer Discounter. Perfekt für Alkohol, Limonaden und reduzierte Markenprodukte." class="translatable text-sm text-green-800 sm:w-2/3">Le discounter suisse. Parfait pour l'alcool, les sodas et les produits de marque bradés.</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center p-5 rounded-xl bg-green-100 border-2 border-green-500 shadow-md transform md:scale-[1.02] mt-4 relative">
+                                <div data-fr="LE CHOIX N°1" data-en="TOP CHOICE" data-it="SCELTA N°1" data-de="TOP-WAHL" class="translatable absolute -top-3 right-4 bg-green-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">LE CHOIX N°1</div>
+                                <div class="flex items-center sm:w-1/3 mb-2 sm:mb-0">
+                                    <span class="w-8 font-black text-green-900 text-xl">6.</span>
+                                    <span class="font-black text-green-900 text-xl">Aldi & Lidl</span>
+                                </div>
+                                <span data-fr="<strong>TA BASE.</strong> Tu dois faire 80% de tes courses ici. Les prix sont presque divisés par deux comparé à la Coop." data-en="<strong>YOUR BASE.</strong> You must do 80% of your shopping here. Prices are almost halved compared to Coop." data-it="<strong>LA TUA BASE.</strong> Devi fare l'80% dei tuoi acquisti qui. I prezzi sono quasi dimezzati rispetto alla Coop." data-de="<strong>DEINE BASIS.</strong> Du musst 80% deiner Einkäufe hier erledigen. Die Preise sind im Vergleich zu Coop fast halbiert." class="translatable text-sm font-medium text-green-900 sm:w-2/3"><strong>TA BASE.</strong> Tu dois faire 80% de tes courses ici. Les prix sont presque divisés par deux comparé à la Coop.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-3 text-navyblue flex items-center gap-2"><span class="text-2xl">📱</span> Too Good To Go</h4>
+                            <p data-fr="Télécharge l'application. Les boulangeries, les supermarchés et même la cafétéria de l'EPFL/UNIL liquident leurs invendus à la fermeture. Tu peux avoir 3 repas pour 5 CHF." data-en="Download the application. Bakeries, supermarkets and even the EPFL/UNIL cafeteria liquidate their unsold items at closing. You can have 3 meals for 5 CHF." data-it="Scarica l'applicazione. Panifici, supermercati e persino la caffetteria EPFL/UNIL liquidano i loro invenduti alla chiusura. Puoi avere 3 pasti per 5 CHF." data-de="Lade die App herunter. Bäckereien, Supermärkte und sogar die Cafeteria der EPFL/UNIL liquidieren ihre unverkauften Artikel bei Geschäftsschluss. Du kannst 3 Mahlzeiten für 5 CHF haben." class="translatable text-sm text-gray-600">Télécharge l'application. Les boulangeries, les supermarchés et même la cafétéria de l'EPFL/UNIL liquident leurs invendus à la fermeture. Tu peux avoir 3 repas pour 5 CHF.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200">
+                            <h4 class="font-bold text-lg mb-3 text-navyblue flex items-center gap-2"><span class="text-2xl">💳</span> L'Astuce Aligro</h4>
+                            <p data-fr="Aligro est un marché de gros (pour les restaurateurs). Les étudiants de l'EPFL/UNIL peuvent demander une &quot;Carte Gourmand&quot; gratuite à l'accueil. Les prix de la viande et des féculents au kilo y sont imbattables." data-en="Aligro is a wholesale market (for restaurateurs). EPFL/UNIL students can request a free &quot;Carte Gourmand&quot; at the reception. The prices of meat and starches per kilo are unbeatable." data-it="Aligro è un mercato all'ingrosso (per ristoratori). Gli studenti dell'EPFL/UNIL possono richiedere una &quot;Carte Gourmand&quot; gratuita alla reception. I prezzi della carne e degli amidi al chilo sono imbattibili." data-de="Aligro ist ein Großmarkt (für Gastronomen). EPFL/UNIL-Studierende können an der Rezeption eine kostenlose &quot;Carte Gourmand&quot; beantragen. Die Preise für Fleisch und Stärkebeilagen pro Kilo sind unschlagbar." class="translatable text-sm text-gray-600">Aligro est un marché de gros (pour les restaurateurs). Les étudiants de l'EPFL/UNIL peuvent demander une "Carte Gourmand" gratuite à l'accueil. Les prix de la viande et des féculents au kilo y sont imbattables.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prem-mod4" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-navyblue text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">4</div>
+                        <h2 data-fr="Télécoms & Transports" data-en="Telecoms & Transport" data-it="Telecomunicazioni e Trasporti" data-de="Telekommunikation & Verkehr" class="translatable text-3xl sm:text-4xl font-serif font-bold text-navyblue">Télécoms & Transports</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="Le Piège Télécom" data-en="The Telecom Trap" data-it="La Trappola Telecom" data-de="Die Telekom-Falle" class="translatable text-2xl font-bold text-inkblack mb-4">Le Piège Télécom</h3>
+                            <p data-fr="Aller chez Swisscom, Salt ou Sunrise et signer un abonnement &quot;Jeune&quot; à 40 ou 50 CHF par mois parce que le vendeur a été sympa est une erreur." data-en="Going to Swisscom, Salt or Sunrise and signing a &quot;Youth&quot; subscription at 40 or 50 CHF per month because the seller was nice is a mistake." data-it="Andare da Swisscom, Salt o Sunrise e firmare un abbonamento &quot;Giovani&quot; a 40 o 50 CHF al mese perché il venditore è stato gentile è un errore." data-de="Zu Swisscom, Salt oder Sunrise zu gehen und ein &quot;Jugend&quot;-Abo für 40 oder 50 CHF pro Monat abzuschließen, weil der Verkäufer nett war, ist ein Fehler." class="translatable text-gray-600 text-sm mb-6">Aller chez Swisscom, Salt ou Sunrise et signer un abonnement "Jeune" à 40 ou 50 CHF par mois parce que le vendeur a été sympa est une erreur.</p>
+                            
+                            <div class="bg-pearlgrey p-6 rounded-xl border border-gray-200">
+                                <h4 data-fr="La Faille : Les sous-marques digitales" data-en="The Loophole: Digital Sub-brands" data-it="La Falla: I Sottomarchi Digitali" data-de="Das Schlupfloch: Digitale Untermarken" class="translatable font-bold text-navyblue mb-3">La Faille : Les sous-marques digitales</h4>
+                                <p data-fr="Ces 3 gros opérateurs possèdent des sous-marques 100% digitales qui utilisent exactement le même réseau, mais coûtent 3 fois moins cher :" data-en="These 3 big operators have 100% digital sub-brands that use exactly the same network, but cost 3 times less:" data-it="Questi 3 grandi operatori possiedono sottomarchi 100% digitali che utilizzano esattamente la stessa rete, ma costano 3 volte meno:" data-de="Diese 3 großen Betreiber haben 100% digitale Untermarken, die genau dasselbe Netzwerk nutzen, aber dreimal weniger kosten:" class="translatable text-sm text-gray-600 mb-4">Ces 3 gros opérateurs possèdent des sous-marques 100% digitales qui utilisent exactement le même réseau, mais coûtent 3 fois moins cher :</p>
+                                <ul class="flex flex-wrap gap-3 mb-6">
+                                    <li class="bg-white px-4 py-2 rounded-lg border border-gray-200 font-bold text-sm shadow-sm">Wingo <span data-fr="(Réseau Swisscom - Le meilleur)" data-en="(Swisscom Network - The best)" data-it="(Rete Swisscom - Il migliore)" data-de="(Swisscom Netz - Das Beste)" class="translatable text-xs text-gray-400 font-normal">(Réseau Swisscom - Le meilleur)</span></li>
+                                    <li class="bg-white px-4 py-2 rounded-lg border border-gray-200 font-bold text-sm shadow-sm">Yallo <span data-fr="(Réseau Sunrise)" data-en="(Sunrise Network)" data-it="(Rete Sunrise)" data-de="(Sunrise Netz)" class="translatable text-xs text-gray-400 font-normal">(Réseau Sunrise)</span></li>
+                                    <li class="bg-white px-4 py-2 rounded-lg border border-gray-200 font-bold text-sm shadow-sm">Swype</li>
+                                </ul>
+                                
+                                <div class="bg-inkblack text-white p-4 rounded-lg flex items-start gap-3">
+                                    <span class="text-xl">🚨</span>
+                                    <div>
+                                        <strong data-fr="La Règle d'Or" data-en="The Golden Rule" data-it="La Regola d'Oro" data-de="Die Goldene Regel" class="translatable block text-swissred mb-1">La Règle d'Or</strong>
+                                        <p data-fr="Ne souscris JAMAIS au prix normal. Attends les offres secrètes (&quot;Black November&quot;, &quot;Back to School&quot;) pour bloquer <strong>15 à 19 CHF / mois à vie</strong> pour le TOUT illimité en Suisse." data-en="NEVER subscribe at the normal price. Wait for secret offers (&quot;Black November&quot;, &quot;Back to School&quot;) to lock in <strong>15 to 19 CHF / month for life</strong> for ALL unlimited in Switzerland." data-it="Non iscriverti MAI al prezzo normale. Attendi le offerte segrete (&quot;Black November&quot;, &quot;Back to School&quot;) per bloccare <strong>da 15 a 19 CHF / mese a vita</strong> per TUTTO illimitato in Svizzera." data-de="Abonniere NIEMALS zum Normalpreis. Warte auf geheime Angebote (&quot;Black November&quot;, &quot;Back to School&quot;), um dir <strong>15 bis 19 CHF / Monat auf Lebenszeit</strong> für ALLES unbegrenzt in der Schweiz zu sichern." class="translatable text-sm text-gray-300">Ne souscris JAMAIS au prix normal. Attends les offres secrètes ("Black November", "Back to School") pour bloquer <strong>15 à 19 CHF / mois à vie</strong> pour le TOUT illimité en Suisse.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="Transports & Mobilité" data-en="Transports & Mobility" data-it="Trasporti e Mobilità" data-de="Verkehr & Mobilität" class="translatable text-2xl font-bold text-inkblack mb-6">Transports & Mobilité</h3>
+                            
+                            <div class="space-y-6">
+                                <div class="flex gap-4 border-b border-gray-100 pb-6">
+                                    <div class="w-10 h-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">🚂</div>
+                                    <div>
+                                        <h4 data-fr="L'Abonnement Demi-Tarif CFF" data-en="SBB Half-Fare Travelcard" data-it="Abbonamento Metà-Prezzo FFS" data-de="SBB Halbtax-Abo" class="translatable font-bold text-inkblack">L'Abonnement Demi-Tarif CFF</h4>
+                                        <p data-fr="Obligatoire (120 CHF la 1ère fois, puis 100 CHF/an pour les jeunes). Il divise par deux le prix de TOUS tes billets de train en Suisse. Rentabilisé en 2 allers-retours Lausanne-Genève." data-en="Mandatory (120 CHF the 1st time, then 100 CHF/year for youth). It halves the price of ALL your train tickets in Switzerland. Pays for itself in 2 Lausanne-Geneva round trips." data-it="Obbligatorio (120 CHF la 1a volta, poi 100 CHF/anno per i giovani). Dimezza il prezzo di TUTTI i tuoi biglietti del treno in Svizzera. Ammortizzato in 2 viaggi di andata e ritorno Losanna-Ginevra." data-de="Obligatorisch (120 CHF beim ersten Mal, dann 100 CHF/Jahr für Jugendliche). Es halbiert den Preis für ALLE deine Zugtickets in der Schweiz. Amortisiert sich nach 2 Hin- und Rückfahrten Lausanne-Genf." class="translatable text-sm text-gray-600 mt-1">Obligatoire (120 CHF la 1ère fois, puis 100 CHF/an pour les jeunes). Il divise par deux le prix de TOUS tes billets de train en Suisse. Rentabilisé en 2 allers-retours Lausanne-Genève.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4 border-b border-gray-100 pb-6">
+                                    <div class="w-10 h-10 bg-green-50 text-green-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">💰</div>
+                                    <div>
+                                        <h4 data-fr="La Subvention du Grand Lausanne" data-en="Greater Lausanne Subsidy" data-it="Sussidio Grande Losanna" data-de="Subvention Großraum Lausanne" class="translatable font-bold text-inkblack">La Subvention du Grand Lausanne</h4>
+                                        <p data-fr="Si tu trouves un logement dans l'une des communes du Grand Lausanne, ne paie surtout pas ton abonnement de bus/métro Mobilis (zones 11 et 12) au tarif normal sur l'app ! Les communes offrent une indemnisation aux étudiants (environ 40% de réduction). Tu passes de 330 CHF à <strong>205 CHF par semestre</strong>. Renseigne-toi au guichet de ta commune." data-en="If you find accommodation in one of the communes of Greater Lausanne, do not pay for your Mobilis bus/metro pass (zones 11 and 12) at the normal rate on the app! Municipalities offer compensation to students (about 40% discount). You go from 330 CHF to <strong>205 CHF per semester</strong>. Inquire at your commune's counter." data-it="Se trovi alloggio in uno dei comuni della Grande Losanna, non pagare assolutamente il tuo abbonamento bus/metro Mobilis (zone 11 e 12) alla tariffa normale sull'app! I comuni offrono un risarcimento agli studenti (sconto di circa il 40%). Passi da 330 CHF a <strong>205 CHF a semestre</strong>. Informati allo sportello del tuo comune." data-de="Wenn du in einer der Gemeinden des Großraums Lausanne wohnst, zahle auf keinen Fall dein Mobilis Bus-/Metro-Abo (Zonen 11 und 12) zum Normaltarif in der App! Die Gemeinden bieten Studierenden eine Entschädigung an (ca. 40% Rabatt). Du zahlst statt 330 CHF nur noch <strong>205 CHF pro Semester</strong>. Erkundige dich am Schalter deiner Gemeinde." class="translatable text-sm text-gray-600 mt-1">Si tu trouves un logement dans l'une des communes du Grand Lausanne, ne paie surtout pas ton abonnement de bus/métro Mobilis (zones 11 et 12) au tarif normal sur l'app ! Les communes offrent une indemnisation aux étudiants (environ 40% de réduction). Tu passes de 330 CHF à <strong>205 CHF par semestre</strong>. Renseigne-toi au guichet de ta commune.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4 border-b border-gray-100 pb-6">
+                                    <div class="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">🌙</div>
+                                    <div>
+                                        <h4 data-fr="L'AG Night (ex-Voie 7)" data-en="AG Night (ex-Voie 7)" data-it="AG Night (ex-Voie 7)" data-de="AG Night (Gleis 7)" class="translatable font-bold text-inkblack">L'AG Night (ex-Voie 7)</h4>
+                                        <p data-fr="Pour 99 CHF par an, tu voyages <strong>gratuitement</strong> sur tout le réseau suisse de 19h00 à 5h00 du matin. Le hack ultime pour rentrer de soirée ou explorer le pays sans payer." data-en="For 99 CHF per year, you travel <strong>for free</strong> on the entire Swiss network from 7:00 PM to 5:00 AM. The ultimate hack to return from parties or explore the country without paying." data-it="Per 99 CHF all'anno, viaggi <strong>gratuitamente</strong> su tutta la rete svizzera dalle 19:00 alle 5:00 del mattino. L'hack definitivo per tornare dalle feste o esplorare il paese senza pagare." data-de="Für 99 CHF pro Jahr reist du <strong>kostenlos</strong> auf dem gesamten Schweizer Netz von 19:00 bis 5:00 Uhr morgens. Der ultimative Hack, um von Partys zurückzukehren oder das Land zu erkunden, ohne zu bezahlen." class="translatable text-sm text-gray-600 mt-1">Pour 99 CHF par an, tu voyages <strong>gratuitement</strong> sur tout le réseau suisse de 19h00 à 5h00 du matin. Le hack ultime pour rentrer de soirée ou explorer le pays sans payer.</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex gap-4">
+                                    <div class="w-10 h-10 bg-orange-50 text-orange-600 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">🚲</div>
+                                    <div>
+                                        <h4 data-fr="Vélos (Point Vélo EPFL/UNIL)" data-en="Bicycles (Point Vélo EPFL/UNIL)" data-it="Biciclette (Point Vélo EPFL/UNIL)" data-de="Fahrräder (Point Vélo EPFL/UNIL)" class="translatable font-bold text-inkblack">Vélos (Point Vélo EPFL/UNIL)</h4>
+                                        <p data-fr="N'achète pas un vélo neuf. Le campus organise des bourses aux vélos. Attention sur Facebook Marketplace / Anibis : 50% des vélos vendus pas chers sont volés. Exige toujours un reçu ou vérifie le numéro de cadre." data-en="Do not buy a new bike. The campus organizes bike sales. Be careful on Facebook Marketplace / Anibis: 50% of cheap bikes sold are stolen. Always demand a receipt or check the frame number." data-it="Non comprare una bicicletta nuova. Il campus organizza borse delle biciclette. Fai attenzione su Facebook Marketplace / Anibis: il 50% delle biciclette vendute a basso prezzo sono rubate. Esigi sempre una ricevuta o controlla il numero di telaio." data-de="Kaufe kein neues Fahrrad. Der Campus organisiert Fahrradbörsen. Vorsicht auf Facebook Marketplace / Anibis: 50% der billig verkauften Fahrräder sind gestohlen. Verlange immer eine Quittung oder überprüfe die Rahmennummer." class="translatable text-sm text-gray-600 mt-1">N'achète pas un vélo neuf. Le campus organise des bourses aux vélos. Attention sur Facebook Marketplace / Anibis : 50% des vélos vendus pas chers sont volés. Exige toujours un reçu ou vérifie le numéro de cadre.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prem-mod5" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-navyblue text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">5</div>
+                        <h2 data-fr="Sport & Revenus" data-en="Sports & Income" data-it="Sport e Reddito" data-de="Sport & Einkommen" class="translatable text-3xl sm:text-4xl font-serif font-bold text-navyblue">Sport & Revenus</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- SPORT -->
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
+                            <h3 data-fr="Le Hack Sportif : Fuis les salles privées" data-en="The Sports Hack: Flee Private Gyms" data-it="L'Hack Sportivo: Fuggi dalle palestre private" data-de="Der Sport-Hack: Meide private Fitnessstudios" class="translatable text-2xl font-bold text-inkblack mb-4">Le Hack Sportif : Fuis les salles privées</h3>
+                            <p data-fr="S'inscrire dans une chaîne commerciale classique te coûtera en moyenne 55 CHF par mois. C'est du vol quand tu as le statut étudiant." data-en="Enrolling in a classic commercial chain will cost you an average of 55 CHF per month. It's theft when you have student status." data-it="Iscriversi in una classica catena commerciale ti costerà in media 55 CHF al mese. È un furto quando hai lo status di studente." data-de="Die Anmeldung in einer klassischen Handelskette kostet dich durchschnittlich 55 CHF pro Monat. Es ist Diebstahl, wenn du den Studentenstatus hast." class="translatable text-sm text-gray-600 mb-6 border-b border-gray-100 pb-4">S'inscrire dans une chaîne commerciale classique te coûtera en moyenne 55 CHF par mois. C'est du vol quand tu as le statut étudiant.</p>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-pearlgrey p-4 rounded-xl">
+                                    <h4 data-fr="Musculation : 90 CHF / AN" data-en="Gym: 90 CHF / YEAR" data-it="Palestra: 90 CHF / ANNO" data-de="Fitness: 90 CHF / JAHR" class="translatable font-bold text-navyblue text-sm mb-1">Musculation : 90 CHF / AN</h4>
+                                    <p data-fr="Si tu es immatriculé à l'EPFL, l'UNIL (ce qui inclut HEC Lausanne), ou dans une école suisse partenaire de la région, tu as accès au Centre des Sports Universitaires au bord du lac (Dorigny) pour 90 CHF par an." data-en="If you are registered at EPFL, UNIL (which includes HEC Lausanne), or a partner Swiss school in the region, you have access to the University Sports Center by the lake (Dorigny) for 90 CHF per year." data-it="Se sei immatricolato all'EPFL, all'UNIL (incluso HEC Losanna), o in una scuola svizzera partner della regione, hai accesso al Centro Sportivo Universitario in riva al lago (Dorigny) per 90 CHF all'anno." data-de="Wenn du an der EPFL, UNIL (einschließlich HEC Lausanne) oder einer Partnerhochschule in der Region eingeschrieben bist, hast du für 90 CHF pro Jahr Zugang zum Universitätssportzentrum am See (Dorigny)." class="translatable text-xs text-gray-600">Si tu es immatriculé à l'EPFL, l'UNIL (ce qui inclut HEC Lausanne), ou dans une école suisse partenaire de la région, tu as accès au Centre des Sports Universitaires au bord du lac (Dorigny) pour 90 CHF par an.</p>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-xl border border-green-200">
+                                    <h4 data-fr="Totalement GRATUIT" data-en="Totally FREE" data-it="Totalmente GRATUITO" data-de="Völlig KOSTENLOS" class="translatable font-bold text-green-800 text-sm mb-1">Totalement GRATUIT</h4>
+                                    <p data-fr="Mais la vraie pépite est ici : ton simple statut d'étudiant (ta Campus Card) te donne accès TOTALEMENT GRATUITEMENT à une liste hallucinante de sports encadrés sans même avoir besoin de payer l'abonnement de musculation de 90 CHF. Athlétisme, combat, basket, foot, voile sur le lac Léman..." data-en="But the real gem is here: your simple student status (your Campus Card) gives you TOTALLY FREE access to a mind-blowing list of supervised sports without even needing to pay the 90 CHF gym membership. Athletics, combat, basketball, football, sailing on Lake Geneva..." data-it="Ma la vera chicca è questa: il tuo semplice status di studente (la tua Campus Card) ti dà accesso TOTALMENTE GRATUITO a un elenco incredibile di sport supervisionati senza nemmeno dover pagare l'abbonamento alla palestra di 90 CHF. Atletica, combattimento, basket, calcio, vela sul Lago di Ginevra..." data-de="Aber das wahre Juwel ist hier: Dein einfacher Studentenstatus (deine Campus Card) gibt dir VÖLLIG KOSTENLOSEN Zugang zu einer unglaublichen Liste von betreuten Sportarten, ohne dass du das 90 CHF Fitnessabo bezahlen musst. Leichtathletik, Kampfsport, Basketball, Fußball, Segeln auf dem Genfersee..." class="translatable text-xs text-green-700 mb-2">Mais la vraie pépite est ici : ton simple statut d'étudiant (ta Campus Card) te donne accès TOTALEMENT GRATUITEMENT à une liste hallucinante de sports encadrés sans même avoir besoin de payer l'abonnement de musculation de 90 CHF. Athlétisme, combat, basket, foot, voile sur le lac Léman...</p>
+                                    <a href="https://sport.unil.ch/" target="_blank" class="text-green-800 font-bold text-xs hover:underline">Consulter sport.unil.ch →</a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- REVENUS -->
+                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-200 flex flex-col justify-between">
+                            <div>
+                                <h3 data-fr="L'Élite du Job Étudiant : L'Assistanat" data-en="The Elite Student Job: Teaching Assistant" data-it="L'Elite del Lavoro Studentesco: L'Assistentato" data-de="Der Elite-Studentenjob: Assistent" class="translatable text-2xl font-bold text-inkblack mb-4">L'Élite du Job Étudiant : L'Assistanat</h3>
+                                <p data-fr="Tu es limité légalement dans tes heures de travail en tant qu'étudiant étranger. Travailler dans la restauration rapide rapporte ~20 CHF/h et te détruit le dos. Devenir Assistant Étudiant à l'EPFL/UNIL rapporte <strong>entre 24 et 26 CHF / heure</strong> (dès ta 2ème année)." data-en="You are legally limited in your working hours as a foreign student. Working in fast food pays ~20 CHF/h and destroys your back. Becoming a Student Assistant at EPFL/UNIL pays <strong>between 24 and 26 CHF / hour</strong> (from your 2nd year)." data-it="Sei legalmente limitato nelle tue ore di lavoro come studente straniero. Lavorare nel fast food rende ~20 CHF/h e ti distrugge la schiena. Diventare Assistente Studente all'EPFL/UNIL rende <strong>tra 24 e 26 CHF / ora</strong> (dal tuo 2° anno)." data-de="Als ausländischer Student bist du gesetzlich in deinen Arbeitsstunden beschränkt. Die Arbeit im Fast-Food bringt ~20 CHF/h und zerstört deinen Rücken. Studentischer Assistent an der EPFL/UNIL zu werden bringt <strong>zwischen 24 und 26 CHF / Stunde</strong> (ab deinem 2. Jahr)." class="translatable text-sm text-gray-600 mb-4">Tu es limité légalement dans tes heures de travail en tant qu'étudiant étranger. Travailler dans la restauration rapide rapporte ~20 CHF/h et te détruit le dos. Devenir Assistant Étudiant à l'EPFL/UNIL rapporte <strong>entre 24 et 26 CHF / heure</strong> (dès ta 2ème année).</p>
+                                
+                                <h4 data-fr="Comment hacker le processus :" data-en="How to hack the process:" data-it="Come hackerare il processo:" data-de="So hackst du den Prozess:" class="translatable font-bold text-sm text-navyblue mb-2">Comment hacker le processus :</h4>
+                                <ul class="text-sm text-gray-600 space-y-2 list-disc list-inside">
+                                    <li data-fr="Vise un &quot;6&quot; (note maximale) dans une matière de 1ère année." data-en="Aim for a &quot;6&quot; (maximum grade) in a 1st year subject." data-it="Punta a un &quot;6&quot; (voto massimo) in una materia del 1° anno." data-de="Ziele auf eine &quot;6&quot; (Bestnote) in einem Fach im 1. Jahr." class="translatable">Vise un "6" (note maximale) dans une matière de 1ère année.</li>
+                                    <li data-fr="Les profs publient rarement les annonces. Ils prennent ceux qu'ils connaissent." data-en="Professors rarely publish ads. They take those they know." data-it="I professori pubblicano raramente annunci. Prendono chi conoscono." data-de="Professoren veröffentlichen selten Anzeigen. Sie nehmen diejenigen, die sie kennen." class="translatable">Les profs publient rarement les annonces. Ils prennent ceux qu'ils connaissent.</li>
+                                    <li data-fr="À la fin du semestre, envoie un email direct au professeur ET au doctorant." data-en="At the end of the semester, send a direct email to the professor AND the PhD student." data-it="Alla fine del semestre, invia un'email diretta al professore E al dottorando." data-de="Sende am Ende des Semesters eine direkte E-Mail an den Professor UND den Doktoranden." class="translatable">À la fin du semestre, envoie un email direct au professeur ET au doctorant.</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="bg-gray-50 p-4 rounded-lg mt-6 border-l-4 border-gray-300">
+                                <p data-fr="Le Hack Email (Fin de semestre) :" data-en="The Email Hack (End of semester):" data-it="L'Hack Email (Fine semestre):" data-de="Der E-Mail-Hack (Ende des Semesters):" class="translatable text-xs font-mono text-gray-500 mb-1">Le Hack Email (Fin de semestre) :</p>
+                                <p data-fr="&quot;J'ai adoré votre cours (note finale : 5.75). Je souhaiterais devenir assistant pour l'édition de l'année prochaine…&quot;" data-en="&quot;I loved your course (final grade: 5.75). I would like to become an assistant for next year's edition...&quot;" data-it="&quot;Ho adorato il suo corso (voto finale: 5.75). Vorrei diventare assistente per l'edizione dell'anno prossimo…&quot;" data-de="&quot;Ich habe Ihren Kurs geliebt (Endnote: 5.75). Ich möchte Assistent für die Ausgabe im nächsten Jahr werden...&quot;" class="translatable text-sm italic text-gray-700">"J'ai adoré votre cours (note finale : 5.75). Je souhaiterais devenir assistant pour l'édition de l'année prochaine…"</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="prem-mod6" class="prem-section scroll-mt-20">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 bg-swissred text-white rounded-xl flex items-center justify-center text-2xl font-bold shadow-md">6</div>
+                        <h2 data-fr="L'Arme Fatale pour tout le reste : Comparis" data-en="The Fatal Weapon for everything else: Comparis" data-it="L'Arma Fatale per tutto il resto: Comparis" data-de="Die fatale Waffe für alles andere: Comparis" class="translatable text-3xl sm:text-4xl font-serif font-bold text-inkblack">L'Arme Fatale pour tout le reste : Comparis</h2>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-navyblue to-gray-900 rounded-3xl p-8 shadow-xl text-white">
+                        <h3 data-fr="Ne signe jamais à l'aveugle." data-en="Never sign blindly." data-it="Non firmare mai alla cieca." data-de="Unterschreibe niemals blind." class="translatable text-2xl font-bold mb-4 text-white">Ne signe jamais à l'aveugle.</h3>
+                        <p data-fr="La règle d'or en Suisse : ne signe jamais un contrat à l'aveugle. Il existe un outil qui est l'arbitre absolu des prix dans le pays : <strong>Comparis</strong>. C'est le comparateur en ligne le plus puissant et fiable de Suisse." data-en="The golden rule in Switzerland: never sign a contract blindly. There is a tool that is the absolute referee of prices in the country: <strong>Comparis</strong>. It's the most powerful and reliable online comparator in Switzerland." data-it="La regola d'oro in Svizzera: non firmare mai un contratto alla cieca. Esiste uno strumento che è l'arbitro assoluto dei prezzi nel paese: <strong>Comparis</strong>. È il comparatore online più potente e affidabile in Svizzera." data-de="Die goldene Regel in der Schweiz: Unterschreibe niemals blind einen Vertrag. Es gibt ein Tool, das der absolute Schiedsrichter für Preise im Land ist: <strong>Comparis</strong>. Es ist der leistungsstärkste und zuverlässigste Online-Vergleichsdienst der Schweiz." class="translatable text-gray-300 mb-6">La règle d'or en Suisse : ne signe jamais un contrat à l'aveugle. Il existe un outil qui est l'arbitre absolu des prix dans le pays : <strong>Comparis</strong>. C'est le comparateur en ligne le plus puissant et fiable de Suisse.</p>
+                        
+                        <div class="bg-white/10 p-6 rounded-2xl border border-white/20 mb-6">
+                            <h4 data-fr="Le cas classique : L'assurance RC/Ménage" data-en="The classic case: RC/Household Insurance" data-it="Il caso classico: Assicurazione RC/Casa" data-de="Der klassische Fall: Haftpflicht-/Hausratversicherung" class="translatable font-bold text-swissred mb-2 text-lg">Le cas classique : L'assurance RC/Ménage</h4>
+                            <p data-fr="Quand tu vas enfin trouver un appartement, la régie va exiger que tu prennes une assurance &quot;Responsabilité Civile&quot; (RC) et &quot;Ménage&quot;. Si tu vas chez l'assureur recommandé, tu vas payer ~300 CHF par an. Sur Comparis (profil &quot;Étudiant&quot;), tu vas trouver des assurances 100% digitales (comme Smile.direct) pour <strong>moins de 100 CHF par an</strong>." data-en="When you finally find an apartment, the agency will require you to take out &quot;Civil Liability&quot; (RC) and &quot;Household&quot; insurance. If you go to the recommended insurer, you will pay ~300 CHF per year. On Comparis (&quot;Student&quot; profile), you will find 100% digital insurances (like Smile.direct) for <strong>less than 100 CHF per year</strong>." data-it="Quando troverai finalmente un appartamento, l'agenzia ti richiederà di stipulare un'assicurazione &quot;Responsabilità Civile&quot; (RC) e &quot;Casa&quot;. Se vai dall'assicuratore consigliato, pagherai ~300 CHF all'anno. Su Comparis (profilo &quot;Studente&quot;), troverai assicurazioni 100% digitali (come Smile.direct) per <strong>meno di 100 CHF all'anno</strong>." data-de="Wenn du endlich eine Wohnung findest, wird die Verwaltung verlangen, dass du eine &quot;Haftpflicht-&quot; (RC) und &quot;Hausratversicherung&quot; abschließt. Wenn du zum empfohlenen Versicherer gehst, zahlst du ~300 CHF pro Jahr. Auf Comparis (Profil &quot;Student&quot;) findest du 100% digitale Versicherungen (wie Smile.direct) für <strong>weniger als 100 CHF pro Jahr</strong>." class="translatable text-sm text-gray-200">Quand tu vas enfin trouver un appartement, la régie va exiger que tu prennes une assurance "Responsabilité Civile" (RC) et "Ménage". Si tu vas chez l'assureur recommandé, tu vas payer ~300 CHF par an. Sur Comparis (profil "Étudiant"), tu vas trouver des assurances 100% digitales (comme Smile.direct) pour <strong>moins de 100 CHF par an</strong>.</p>
+                        </div>
+                        <a href="https://fr.comparis.ch/" target="_blank" class="inline-block bg-white text-navyblue px-6 py-3 rounded-full font-bold hover:bg-gray-100 text-sm">Accéder à Comparis.ch</a>
+                    </div>
+                </section>
+
+                <section id="prem-actions" class="prem-section scroll-mt-20 border-t border-gray-200 pt-16">
+                    <h2 data-fr="Passe à l'Action" data-en="Take Action" data-it="Passa all'Azione" data-de="Werde aktiv" class="translatable text-4xl font-serif font-bold text-center text-navyblue mb-12">Passe à l'Action</h2>
+                    
+                    <div class="max-w-md mx-auto mb-12">
+                        <div class="bg-white p-6 rounded-2xl border border-green-200 shadow-sm text-center">
+                            <h3 data-fr="<span>💸</span> Rembourse ton achat" data-en="<span>💸</span> Refund your purchase" data-it="<span>💸</span> Rimborsa il tuo acquisto" data-de="<span>💸</span> Refinanziere deinen Kauf" class="translatable font-bold text-inkblack mb-3 flex items-center justify-center gap-2 text-xl"><span>💸</span> Rembourse ton achat</h3>
+                            <p data-fr="Gagne <strong>30 CHF</strong> à chaque étudiant qui achète via ton lien (4 = remboursé)." data-en="Earn <strong>30 CHF</strong> for every student who buys via your link (4 = refunded)." data-it="Guadagna <strong>30 CHF</strong> per ogni studente che acquista tramite il tuo link (4 = rimborsato)." data-de="Verdiene <strong>30 CHF</strong> für jeden Studenten, der über deinen Link kauft (4 = refinanziert)." class="translatable text-sm text-gray-600 mb-6">Gagne <strong>30 CHF</strong> à chaque étudiant qui achète via ton lien (4 = remboursé).</p>
+                            <button class="w-full bg-green-600 text-white py-3 rounded-xl font-bold text-sm shadow-md hover:bg-green-700 transition-colors">[LIEN INSCRIPTION AFFILIÉ]</button>
+                        </div>
+                    </div>
+                </section>
+                
+            </article>
+        </main>
+    </div>
+    <!-- ========== FIN VUE PREMIUM ============= -->
+
+
+    <!-- SCRIPTS DE GESTION DE L'APP -->
+    <script>
+        let publicChartInstance = null;
+        let premiumChartInstance = null;
+        let currentLang = 'fr';
+
+        // Fonction pour basculer entre la Vitrine, le Dashboard et les Mentions Légales
+        function toggleView(targetView, legalTab = 'cgv') {
+            const publicView = document.getElementById('public-view');
+            const premiumView = document.getElementById('premium-view');
+            const legalView = document.getElementById('legal-view');
+            const body = document.getElementById('app-body');
+
+            [publicView, premiumView, legalView].forEach(v => v.classList.add('fade-out'));
+
+            setTimeout(() => {
+                [publicView, premiumView, legalView].forEach(v => {
+                    v.classList.add('hidden');
+                    v.classList.remove('block', 'fade-out', 'flex');
+                });
+
+                if (targetView === 'premium') {
+                    premiumView.classList.remove('hidden');
+                    premiumView.classList.add('flex');
+                    body.classList.add('overflow-hidden', 'bg-pearlgrey');
+                    body.classList.remove('bg-white');
+                    initPremiumChart();
+                } else if (targetView === 'legal') {
+                    legalView.classList.remove('hidden');
+                    legalView.classList.add('block');
+                    body.classList.remove('overflow-hidden', 'bg-pearlgrey');
+                    body.classList.add('bg-white');
+                    window.scrollTo(0,0);
+                    showLegalTab(legalTab);
+                } else {
+                    publicView.classList.remove('hidden');
+                    publicView.classList.add('block');
+                    body.classList.remove('overflow-hidden', 'bg-pearlgrey');
+                    body.classList.add('bg-white');
+                    window.scrollTo(0,0);
+                }
+            }, 500);
+        }
+
+        // Fonction pour gérer les onglets légaux
+        function showLegalTab(tabId) {
+            const btnCgv = document.getElementById('tab-btn-cgv');
+            const btnPrivacy = document.getElementById('tab-btn-privacy');
+            const contentCgv = document.getElementById('legal-content-cgv');
+            const contentPrivacy = document.getElementById('legal-content-privacy');
+
+            btnCgv.className = "legal-tab-btn pb-4 font-bold text-gray-400 hover:text-inkblack transition-colors translatable";
+            btnPrivacy.className = "legal-tab-btn pb-4 font-bold text-gray-400 hover:text-inkblack transition-colors translatable";
+            contentCgv.classList.replace('block', 'hidden');
+            contentPrivacy.classList.replace('block', 'hidden');
+
+            if (tabId === 'cgv') {
+                btnCgv.className = "legal-tab-btn pb-4 font-bold text-swissred border-b-2 border-swissred translatable";
+                contentCgv.classList.replace('hidden', 'block');
+            } else {
+                btnPrivacy.className = "legal-tab-btn pb-4 font-bold text-swissred border-b-2 border-swissred translatable";
+                contentPrivacy.classList.replace('hidden', 'block');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Scroll Reveal (Public)
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver(function(entries, observer) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // Tabs Module (Public)
+            const pubTabButtons = document.querySelectorAll('.pub-tab-btn');
+            const pubTabContents = document.querySelectorAll('.pub-tab-content');
+            pubTabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    pubTabButtons.forEach(btn => {
+                        btn.classList.remove('bg-white', 'text-inkblack', 'shadow-sm', 'border-swissred');
+                        btn.classList.add('hover:bg-white', 'text-gray-500', 'hover:text-inkblack', 'border-transparent');
+                    });
+                    pubTabContents.forEach(content => {
+                        content.classList.add('hidden');
+                        content.classList.remove('block');
+                    });
+                    button.classList.add('bg-white', 'text-inkblack', 'shadow-sm', 'border-swissred');
+                    button.classList.remove('hover:bg-white', 'text-gray-500', 'hover:text-inkblack', 'border-transparent');
+                    const targetId = button.getAttribute('data-target');
+                    document.getElementById(targetId).classList.remove('hidden');
+                    document.getElementById(targetId).classList.add('block');
+                });
+            });
+
+            // Init Public Chart
+            const ctxPublic = document.getElementById('publicRoiChart');
+            if(ctxPublic) {
+                publicChartInstance = new Chart(ctxPublic.getContext('2d'), getChartConfig(true, currentLang));
+            }
+
+            // ScrollSpy pour la barre latérale Premium
+            const premSections = document.querySelectorAll('.prem-section');
+            const premNavLinks = document.querySelectorAll('.nav-link');
+            const mainScrollArea = document.getElementById('main-scroll-area');
+
+            mainScrollArea.addEventListener('scroll', () => {
+                let current = '';
+                premSections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (mainScrollArea.scrollTop >= (sectionTop - 150)) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                premNavLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+
+        // System de Traduction
+        function switchLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            
+            // Text HTML replacement
+            const translatableElements = document.querySelectorAll('.translatable');
+            translatableElements.forEach(el => {
+                if (el.getAttribute(`data-${lang}`)) {
+                    el.innerHTML = el.getAttribute(`data-${lang}`);
+                }
+            });
+
+            // Update UI selectors state (Public & Premium)
+            const langs = ['fr', 'en', 'it', 'de'];
+            langs.forEach(l => {
+                const btnPub = document.getElementById(`lang-${l}`);
+                const btnPrem = document.getElementById(`lang-prem-${l}`);
+                const btnPremMob = document.getElementById(`lang-prem-mob-${l}`);
+                
+                if (btnPub) {
+                    if (l === lang) {
+                        btnPub.classList.add('text-inkblack', 'font-bold', 'border-inkblack');
+                        btnPub.classList.remove('text-gray-400', 'border-transparent');
+                    } else {
+                        btnPub.classList.remove('text-inkblack', 'font-bold', 'border-inkblack');
+                        btnPub.classList.add('text-gray-400', 'border-transparent');
+                    }
+                }
+                
+                if (btnPrem) {
+                    if (l === lang) {
+                        btnPrem.classList.add('text-white', 'font-bold', 'border-white');
+                        btnPrem.classList.remove('text-gray-400', 'border-transparent');
+                    } else {
+                        btnPrem.classList.remove('text-white', 'font-bold', 'border-white');
+                        btnPrem.classList.add('text-gray-400', 'border-transparent');
+                    }
+                }
+
+                if (btnPremMob) {
+                    if (l === lang) {
+                        btnPremMob.classList.add('text-white', 'font-bold', 'border-white');
+                        btnPremMob.classList.remove('text-gray-400', 'border-transparent');
+                    } else {
+                        btnPremMob.classList.remove('text-white', 'font-bold', 'border-white');
+                        btnPremMob.classList.add('text-gray-400', 'border-transparent');
+                    }
+                }
+            });
+
+            // Update Charts
+            updateChartsLanguage(lang);
+        }
+
+        // Configuration standardisée pour les deux graphiques
+        function getChartConfig(isPublic, lang) {
+            const labels = {
+                'fr': ['LAMal', 'Logement', 'Alimentation', 'Télécoms', 'Sport'],
+                'en': ['LAMal', 'Housing', 'Food', 'Telecoms', 'Sports'],
+                'it': ['LAMal', 'Alloggio', 'Alimentazione', 'Telecomunicazioni', 'Sport'],
+                'de': ['LAMal', 'Wohnen', 'Ernährung', 'Telekom', 'Sport']
+            };
+            const dsPublic = {
+                'fr': ['Sans Blueprint (CHF/mois)', 'Avec Blueprint (CHF/mois)'],
+                'en': ['Without Blueprint (CHF/mo)', 'With Blueprint (CHF/mo)'],
+                'it': ['Senza Blueprint (CHF/mese)', 'Con Blueprint (CHF/mese)'],
+                'de': ['Ohne Blueprint (CHF/Monat)', 'Mit Blueprint (CHF/Monat)']
+            };
+            const dsPrem = {
+                'fr': ['Sans Hack', 'Avec Hack'],
+                'en': ['Without Hack', 'With Hack'],
+                'it': ['Senza Hack', 'Con Hack'],
+                'de': ['Ohne Hack', 'Mit Hack']
+            };
+
+            return {
+                type: 'bar',
+                data: {
+                    labels: labels[lang],
+                    datasets: [
+                        {
+                            label: isPublic ? dsPublic[lang][0] : dsPrem[lang][0],
+                            data: [350, 1100, 600, 35, 60],
+                            backgroundColor: '#111111', 
+                            borderRadius: 4,
+                            barPercentage: 0.8
+                        },
+                        {
+                            label: isPublic ? dsPublic[lang][1] : dsPrem[lang][1],
+                            data: [65, 650, 300, 14, 7.5],
+                            backgroundColor: '#DA291C', 
+                            borderRadius: 4,
+                            barPercentage: 0.8
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { 
+                            display: isPublic,
+                            position: 'top',
+                            labels: { font: { family: 'Inter', size: 12 }, usePointStyle: true }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0A192F',
+                            titleFont: { family: 'Inter', size: 13 },
+                            bodyFont: { family: 'Inter', size: 13 },
+                            callbacks: {
+                                footer: function(tooltipItems) {
+                                    let valWithout = tooltipItems[0].parsed.y;
+                                    let valWith = tooltipItems[1].parsed.y;
+                                    return 'Économie : ' + (valWithout - valWith) + ' CHF/mois';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter' } } },
+                        y: { 
+                            beginAtZero: true, 
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { font: { family: 'Inter' }, callback: value => value + ' CHF' }
+                        }
+                    }
+                }
+            };
+        }
+
+        // Met à jour dynamiquement les textes des graphiques
+        function updateChartsLanguage(lang) {
+            const labels = {
+                'fr': ['LAMal', 'Logement', 'Alimentation', 'Télécoms', 'Sport'],
+                'en': ['LAMal', 'Housing', 'Food', 'Telecoms', 'Sports'],
+                'it': ['LAMal', 'Alloggio', 'Alimentazione', 'Telecomunicazioni', 'Sport'],
+                'de': ['LAMal', 'Wohnen', 'Ernährung', 'Telekom', 'Sport']
+            };
+            const dsPublic = {
+                'fr': ['Sans Blueprint (CHF/mois)', 'Avec Blueprint (CHF/mois)'],
+                'en': ['Without Blueprint (CHF/mo)', 'With Blueprint (CHF/mo)'],
+                'it': ['Senza Blueprint (CHF/mese)', 'Con Blueprint (CHF/mese)'],
+                'de': ['Ohne Blueprint (CHF/Monat)', 'Mit Blueprint (CHF/Monat)']
+            };
+            const dsPrem = {
+                'fr': ['Sans Hack', 'Avec Hack'],
+                'en': ['Without Hack', 'With Hack'],
+                'it': ['Senza Hack', 'Con Hack'],
+                'de': ['Ohne Hack', 'Mit Hack']
+            };
+
+            if (publicChartInstance) {
+                publicChartInstance.data.labels = labels[lang];
+                publicChartInstance.data.datasets[0].label = dsPublic[lang][0];
+                publicChartInstance.data.datasets[1].label = dsPublic[lang][1];
+                publicChartInstance.update();
+            }
+            if (premiumChartInstance) {
+                premiumChartInstance.data.labels = labels[lang];
+                premiumChartInstance.data.datasets[0].label = dsPrem[lang][0];
+                premiumChartInstance.data.datasets[1].label = dsPrem[lang][1];
+                premiumChartInstance.update();
+            }
+        }
+
+        function initPremiumChart() {
+            if (!premiumChartInstance) {
+                const ctxPrem = document.getElementById('premiumRoiChart');
+                if(ctxPrem) {
+                    premiumChartInstance = new Chart(ctxPrem.getContext('2d'), getChartConfig(false, currentLang));
+                }
+            }
+        }
+    </script>
+</body>
+</html>
